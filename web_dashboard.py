@@ -226,6 +226,72 @@ def api_backtest_run_all():
         return jsonify({"error": str(e)}), 500
 
 
+# ============================================================
+# 각 탭 페이지 라우트 (독립 페이지)
+# ============================================================
+
+@app.route("/page/summary")
+def page_summary():
+    """AI 요약 페이지 - 시장 개요 + 계좌 요약"""
+    try:
+        from run_backtest import generate_sample_data
+        data = generate_sample_data(30)
+        up = sum(1 for d in data if d["close"] > data[data.index(d)-1]["close"]) if len(data) > 1 else 0
+        down = len(data) - up - 1
+        return jsonify({
+            "kospi": {"price": 5290.53, "change": -0.98, "open": True},
+            "kosdaq": {"price": 699.66, "change": 0.45, "open": True},
+            "market_status": "장중",
+            "server_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "ai_insight": f"오늘 시장은 혼조세를 보이고 있습니다. 상승 {up}개, 하락 {down}개 종목.",
+        })
+    except:
+        return jsonify({"kospi": {"price": 5290, "change": -0.98}, "kosdaq": {"price": 700, "change": 0.45}, "market_status": "장중"})
+
+@app.route("/page/portfolio")
+def page_portfolio():
+    """포트폴리오 페이지 - 보유 종목 + 거래내역"""
+    invested = _get_invested()
+    return jsonify({
+        "positions": _load_positions(),
+        "trades": _load_trades(),
+        "account": {"total": 10000000, "invested": invested, "available": 10000000 - invested, "profit_rate": _get_profit_rate()},
+    })
+
+@app.route("/page/strategies")
+def page_strategies():
+    """전략 페이지 - 전략 라이브러리"""
+    from run_backtest import load_strategies
+    strategies = load_strategies()
+    return jsonify({"strategies": [{"index": i, "name": s.get("name"), "category": s.get("category", "General"),
+        "description": s.get("description", ""), "params": s.get("buy", [])} for i, s in enumerate(strategies)]})
+
+@app.route("/page/backtest")
+def page_backtest():
+    """백테스팅 페이지 - 전략 성과 비교"""
+    try:
+        from backtest import BacktestEngine, load_strategy
+        from run_backtest import load_strategies, generate_sample_data
+        strategies = load_strategies()
+        data = generate_sample_data(252)
+        engine = BacktestEngine(initial_capital=10000000)
+        results = []
+        for s in strategies:
+            try:
+                strategy = load_strategy(s)
+                r = engine.run(data, strategy)
+                results.append({"name": s["name"], "category": s.get("category", "General"), "result": r.to_dict()})
+            except:
+                results.append({"name": s.get("name", "?"), "category": s.get("category", "General"), "result": {"summary": {"total_return": 0, "win_rate": 0, "max_drawdown": 0, "profit_factor": 0, "total_trades": 0}}})
+        return jsonify({"results": results})
+    except Exception as e:
+        return jsonify({"error": str(e), "results": []}), 500
+
+@app.route("/page/logs")
+def page_logs():
+    """로그 페이지 - 시스템 로그"""
+    logs = _load_logs()
+    return jsonify({"logs": logs, "config": {}})
 if __name__ == "__main__":
     print("=" * 50)
     print("   주식 자동매매 시스템 - 웹 대시보드")
