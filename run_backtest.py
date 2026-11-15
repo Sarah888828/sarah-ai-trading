@@ -1,147 +1,174 @@
 """
-백테스팅 실행 스크립트 (CLI)
-Logic Works 방식: JSON 전략 설정 → 과거 데이터 로드 → 시뮬레이션 → 결과 출력
-
-사용법:
-  python run_backtest.py                          # 샘플 데이터로 실행
-  python run_backtest.py --stock 005930 --days 365 # 실제 종목 데이터
-  python run_backtest.py --strategy my_strat.json  # 커스텀 전략
-  python run_backtest.py --list                    # 저장된 전략 목록
+YSN AI Terminal - Logic Works 백테스팅 CLI
+python run_backtest.py                          # 샘플 데이터 전체 전략 실행
+python run_backtest.py --strategy 0              # 특정 전략만 실행 (인덱스)
+python run_backtest.py --list                   # 전략 목록
+python run_backtest.py --ysn                    # YSN 전략 세트 실행
+python run_backtest.py --stock 005930 --days 365 # 실제 종목
 """
 
-import os
-import sys
-import json
-import argparse
-import logging
+import os, sys, json, argparse, logging
 from datetime import datetime, timedelta
+import numpy as np
 
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger(__name__)
 
 
 def generate_sample_data(days=252):
-    """샘플 OHLCV 데이터 생성 (실제 데이터 없을 때 사용)"""
-    import numpy as np
     np.random.seed(42)
     date = datetime(2025, 1, 2)
     price = 70000
     data = []
-
+    high_20d_list = []
     for i in range(days):
         date += timedelta(days=1)
         if date.weekday() >= 5:
             continue
         change = np.random.normal(0.001, 0.02)
-        open_price = price
-        high = open_price * (1 + abs(np.random.normal(0, 0.015)))
-        low = open_price * (1 - abs(np.random.normal(0, 0.015)))
-        close = open_price * (1 + change)
-        volume = int(np.random.uniform(500000, 5000000))
-        price = close
+        o = price
+        h = o * (1 + abs(np.random.normal(0, 0.015)))
+        l = o * (1 - abs(np.random.normal(0, 0.015)))
+        c = o * (1 + change)
+        v = int(np.random.uniform(500000, 5000000))
+        price = c
 
-        ma_5 = sum(prev.get("close", close) for prev in data[-4:]) / min(len(data[-4:]) + 1, 5) if data else close
-        ma_20 = sum(prev.get("close", close) for prev in data[-19:]) / min(len(data[-19:]) + 1, 20) if data else close
+        ma_5 = sum(d["close"] for d in data[-4:]) / max(len(data[-4:]), 1) if data else c
+        ma_20 = sum(d["close"] for d in data[-19:]) / max(len(data[-19:]), 1) if data else c
+        rsi = max(0, min(100, 50 + np.random.normal(0, 15)))
+        vol_ratio = v / 2000000 if v else 1.0
 
-        # RSI 샘플
-        rsi = 50 + np.random.normal(0, 15)
-        rsi = max(0, min(100, rsi))
+        # 보조 지표들
+        bollinger_ma = ma_20
+        bollinger_std = np.std([d["close"] for d in data[-20:]]) if len(data) >= 20 else c * 0.02
+        bollinger_upper = bollinger_ma + 2 * bollinger_std
+        bollinger_lower = bollinger_ma - 2 * bollinger_std
+        ema_fast = sum(d["close"] * (0.15 * (1 - 0.15) ** (4 - i)) for i, d in enumerate(data[-5:])) if data else c
+        ema_slow = sum(d["close"] * (0.04 * (1 - 0.04) ** (19 - i)) for i, d in enumerate(data[-20:])) if data else c
+        macd = ema_fast - ema_slow
+        macd_signal = macd * 0.3 + (data[-1].get("macd_signal", macd) * 0.7 if data else macd)
+        high_20d_list.append(h)
+        if len(high_20d_list) > 20:
+            high_20d_list.pop(0)
+        high_20d = max(high_20d_list) if high_20d_list else h
 
-        row = {
-            "date": date.strftime("%Y-%m-%d"),
-            "open": round(open_price),
-            "high": round(high),
-            "low": round(low),
-            "close": round(close),
-            "volume": volume,
-            "ma_5": round(ma_5),
-            "ma_20": round(ma_20),
-            "RSI": round(rsi, 1),
-            "volume_ratio": volume / 2000000 if volume else 1.0,
-        }
+        momentum_5d = ((c / data[-5]["close"]) - 1) * 100 if len(data) >= 5 else 0
+
+        row = {"date": date.strftime("%Y-%m-%d"), "open": round(o), "high": round(h), "low": round(l),
+            "close": round(c), "volume": v, "ma_5": round(ma_5, 1), "ma_20": round(ma_20, 1),
+            "RSI": round(rsi, 1), "volume_ratio": round(vol_ratio, 2),
+            "bollinger_upper": round(bollinger_upper, 1), "bollinger_mid": round(bollinger_ma, 1),
+            "bollinger_lower": round(bollinger_lower, 1), "MACD": round(macd, 1),
+            "macd_signal": round(macd_signal, 1), "high_20d": round(high_20d, 1),
+            "momentum_5d": round(momentum_5d, 2)}
         data.append(row)
-
-    logger.info(f"샘플 데이터 생성 완료: {len(data)}일")
     return data
 
 
-def print_result(result, title="백테스팅 결과"):
-    """결과 출력"""
-    s = result.to_dict()["summary"]
-    print()
-    print("=" * 50)
-    print(f"  📊 {title}")
-    print("=" * 50)
-    print(f"  총 매매 횟수:    {s['total_trades']}회")
-    print(f"  승리/패배:       {s['win_trades']}승 / {s['lose_trades']}패")
-    print(f"  승률:            {s['win_rate']}%")
-    print(f"  총 수익률:       {s['total_return']}%")
-    print(f"  최대 낙폭(MDD):  {s['max_drawdown']}%")
-    print(f"  Profit Factor:   {s['profit_factor']}")
-    print(f"  Sharpe Ratio:    {s['sharpe_ratio']}")
-    print("=" * 50)
+def load_strategies():
+    strategies = []
+    # sample_strategy.json
+    sample_path = os.path.join(os.path.dirname(__file__), "backtest", "sample_strategy.json")
+    if os.path.exists(sample_path):
+        with open(sample_path, "r", encoding="utf-8") as f:
+            strategies.append(json.load(f))
 
-    if result.trades:
-        print(f"\n  최근 매매 내역 (최대 10건):")
-        print(f"  {'종목':12s} {'매수일':12s} {'매도일':12s} {'수익률':8s} {'사유'}")
-        print(f"  {'-'*50}")
-        for t in result.trades[-10:]:
-            print(f"  {t['stock']:12s} {t['buy_date']:12s} {t['sell_date']:12s} {t['profit_rate']:7.2f}% {t['reason']}")
-    print()
+    # strategies_ysn.json
+    ysn_path = os.path.join(os.path.dirname(__file__), "backtest", "strategies_ysn.json")
+    if os.path.exists(ysn_path):
+        with open(ysn_path, "r", encoding="utf-8") as f:
+            ysn_data = json.load(f)
+            if "strategies" in ysn_data:
+                strategies.extend(ysn_data["strategies"])
+            else:
+                strategies.append(ysn_data)
+
+    # 개별 json 파일들
+    btd = os.path.join(os.path.dirname(__file__), "backtest")
+    for f in os.listdir(btd):
+        if f.endswith(".json") and f not in ("sample_strategy.json", "strategies_ysn.json"):
+            with open(os.path.join(btd, f), "r", encoding="utf-8") as fp:
+                s = json.load(fp)
+                if "strategies" not in s and "name" in s:
+                    strategies.append(s)
+    return strategies
+
+def print_result(result, title="백테스팅 결과"):
+    s = result.to_dict()["summary"]
+    print(f"\n{'='*55}")
+    print(f"  {title}")
+    print(f"{'='*55}")
+    print(f"  총 매매: {s['total_trades']}회 | 승/패: {s['win_trades']}/{s['lose_trades']}")
+    print(f"  승률: {s['win_rate']}% | 수익률: {s['total_return']}%")
+    print(f"  MDD: {s['max_drawdown']}% | PF: {s['profit_factor']} | SR: {s['sharpe_ratio']}")
+    print(f"{'='*55}")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Logic Works 백테스팅")
-    parser.add_argument("--stock", default=None, help="종목코드 (예: 005930)")
-    parser.add_argument("--days", type=int, default=252, help="백테스팅 기간 (일)")
-    parser.add_argument("--strategy", default=None, help="전략 JSON 파일 경로")
-    parser.add_argument("--capital", type=int, default=10000000, help="초기 자본금")
-    parser.add_argument("--list", action="store_true", help="전략 목록 보기")
+    parser = argparse.ArgumentParser(description="YSN AI Terminal - Logic Works 백테스팅")
+    parser.add_argument("--strategy", type=int, default=None, help="전략 인덱스 (0부터)")
+    parser.add_argument("--list", action="store_true", help="전략 목록")
+    parser.add_argument("--ysn", action="store_true", help="YSN 전략 세트 실행")
+    parser.add_argument("--stock", default=None, help="종목코드")
+    parser.add_argument("--days", type=int, default=252)
+    parser.add_argument("--capital", type=int, default=10000000)
     args = parser.parse_args()
-
-    if args.list:
-        strategies_dir = os.path.join(os.path.dirname(__file__), "backtest")
-        json_files = [f for f in os.listdir(strategies_dir) if f.endswith(".json")]
-        print("\n📋 저장된 전략 목록:")
-        for f in json_files:
-            path = os.path.join(strategies_dir, f)
-            with open(path, "r", encoding="utf-8") as fp:
-                config = json.load(fp)
-            print(f"  • {config.get('name', f)} ({f})")
-        print()
-        return
 
     from backtest import BacktestEngine, load_strategy
 
-    # 전략 로드
-    if args.strategy:
-        strategy_path = args.strategy
-    else:
-        strategy_path = os.path.join(os.path.dirname(__file__), "backtest", "sample_strategy.json")
+    strategies = load_strategies()
 
-    if not os.path.exists(strategy_path):
-        logger.error(f"전략 파일 없음: {strategy_path}")
-        sys.exit(1)
+    if args.list or args.strategy is None and not args.ysn:
+        print(f"\n{'='*55}")
+        print(f"  YSN AI Terminal - Logic Works 백테스팅")
+        print(f"{'='*55}")
+        for i, s in enumerate(strategies):
+            cat = s.get("category", "General")
+            print(f"  [{i}] {s['name']} ({cat})")
+            print(f"      {s.get('description', '')[:60]}")
+        print(f"{'='*55}")
+        print(f"  사용법: python run_backtest.py --strategy 0")
+        print()
+        if args.list:
+            return
 
-    with open(strategy_path, "r", encoding="utf-8") as f:
-        strategy_config = json.load(f)
-
-    strategy = load_strategy(strategy_config)
-
-    # 데이터 준비
+    # 데이터
     if args.stock:
-        logger.info(f"종목 데이터 로드: {args.stock}")
-        data = generate_sample_data(args.days)  # 실제 데이터 로드로 대체 필요
+        logger.info(f"종목 로드: {args.stock}")
+        data = generate_sample_data(args.days)
     else:
         data = generate_sample_data(args.days)
 
-    # 백테스팅 실행
-    engine = BacktestEngine(initial_capital=args.capital)
-    result = engine.run(data, strategy)
-    
-    # 결과 출력
-    title = f"Logic Works | {strategy.name} | {args.stock or '샘플'}"
-    print_result(result, title)
+    # 실행할 전략 목록
+    if args.strategy is not None:
+        selected = [strategies[args.strategy]]
+    elif args.ysn:
+        selected = [s for s in strategies if s.get("category") != "General"]
+        if not selected:
+            selected = strategies
+    else:
+        selected = strategies
+
+    if len(selected) == 1:
+        s = selected[0]
+        strategy = load_strategy(s)
+        result = engine.run(data, strategy)
+        print_result(result, f"YSN | {s['name']}")
+    else:
+        print(f"\n{'='*55}")
+        print(f"  YSN AI Terminal - 전략 비교 백테스팅")
+        print(f"{'='*55}")
+        results = []
+        for s in selected:
+            strategy = load_strategy(s)
+            r = engine.run(data, strategy)
+            results.append((s["name"], r))
+            print_result(r, f"[{s.get('category','General')}] {s['name']}")
+        print(f"\n  {'Strategy':25s} {'Win%':8s} {'Return':8s} {'MDD':8s} {'PF':6s} {'SR':6s}")
+        print(f"  {'-'*61}")
+        for name, r in results:
+            sm = r.to_dict()["summary"]
+            print(f"  {name[:24]:25s} {sm['win_rate']:7.2f}% {sm['total_return']:7.2f}% {sm['max_drawdown']:7.2f}% {sm['profit_factor']:<6.2f} {sm['sharpe_ratio']:<6.2f}")
 
 
 if __name__ == "__main__":

@@ -6,7 +6,7 @@
 
 import json, os, logging
 from datetime import datetime, timedelta
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 from db.manager import DatabaseManager
 logging.basicConfig(level=logging.INFO)
@@ -177,11 +177,16 @@ def api_strategies():
 def api_backtest_run():
     try:
         from backtest import BacktestEngine, load_strategy
-        sp = os.path.join(os.path.dirname(__file__), "backtest", "sample_strategy.json")
-        with open(sp, "r", encoding="utf-8") as f:
-            sc = json.load(f)
+        idx = request.args.get("strategy", default=None, type=int)
+        from run_backtest import load_strategies, generate_sample_data
+        strategies = load_strategies()
+        if idx is not None and 0 <= idx < len(strategies):
+            sc = strategies[idx]
+        else:
+            sp = os.path.join(os.path.dirname(__file__), "backtest", "sample_strategy.json")
+            with open(sp, "r", encoding="utf-8") as f:
+                sc = json.load(f)
         s = load_strategy(sc)
-        from run_backtest import generate_sample_data
         d = generate_sample_data(252)
         r = BacktestEngine(initial_capital=10000000).run(d, s)
         return jsonify(r.to_dict())
@@ -190,14 +195,32 @@ def api_backtest_run():
 
 @app.route("/api/backtest/strategies")
 def api_backtest_strategies():
-    sd = os.path.join(os.path.dirname(__file__), "backtest")
+    from run_backtest import load_strategies
+    strategies = load_strategies()
     r = []
-    for f in os.listdir(sd):
-        if f.endswith(".json"):
-            with open(os.path.join(sd, f), "r", encoding="utf-8") as fp:
-                c = json.load(fp)
-            r.append({"file": f, "name": c.get("name", f)})
+    for i, s in enumerate(strategies):
+        r.append({"index": i, "name": s.get("name", f"Strategy {i}"),
+                  "category": s.get("category", "General"),
+                  "description": s.get("description", "")[:80]})
     return jsonify({"strategies": r})
+
+@app.route("/api/backtest/run_all")
+def api_backtest_run_all():
+    try:
+        from backtest import BacktestEngine, load_strategy
+        from run_backtest import load_strategies, generate_sample_data
+        strategies = load_strategies()
+        d = generate_sample_data(252)
+        engine = BacktestEngine(initial_capital=10000000)
+        results = []
+        for s in strategies:
+            strategy = load_strategy(s)
+            r = engine.run(d, strategy)
+            results.append({"name": s["name"], "category": s.get("category", "General"),
+                            "result": r.to_dict()})
+        return jsonify({"results": results})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":

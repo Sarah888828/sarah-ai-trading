@@ -1,0 +1,103 @@
+{
+  "strategies": [
+    {
+      "name": "YSN Momentum Burst",
+      "description": "AI 기반 모멘텀 + 변동성 돌파. 볼린저밴드 상단 돌파 + 거래량 급증 → 추세 추종 매수",
+      "category": "Momentum",
+      "position_size": 0.25,
+      "max_positions": 4,
+      "stop_loss": -0.04,
+      "take_profit": 0.08,
+      "trailing_stop": 0.02,
+      "buy": [
+        {"name": "볼린저밴드 상단 돌파", "indicator": "close", "operator": ">", "value": "bollinger_upper", "logic": "OR"},
+        {"name": "거래량 급증", "indicator": "volume_ratio", "operator": ">", "value": 2.0, "logic": "AND"},
+        {"name": "추세 강함", "indicator": "ma_5", "operator": ">", "value": "ma_20", "logic": "AND"}
+      ],
+      "sell": [
+        {"name": "RSI 과매수", "indicator": "RSI", "operator": ">", "value": 75},
+        {"name": "볼린저 하향 이탈", "indicator": "close", "operator": "cross_below", "value": "bollinger_mid"},
+        {"name": "추세 약화", "indicator": "ma_5", "operator": "cross_below", "value": "ma_20"}
+      ]
+    },
+    {
+      "name": "YSN AI Reversal",
+      "description": "AI 기반 반전 매매. RSI 과매도 + 볼린저밴드 하단 + 거래량 급증 → 바닥 반전 포착",
+      "category": "Reversal",
+      "position_size": 0.2,
+      "max_positions": 3,
+      "stop_loss": -0.03,
+      "take_profit": 0.06,
+      "buy": [
+        {"name": "RSI 과매도", "indicator": "RSI", "operator": "<", "value": 30, "logic": "AND"},
+        {"name": "볼린저밴드 하단", "indicator": "close", "operator": "<=", "value": "bollinger_lower", "logic": "AND"},
+        {"name": "거래량 급증", "indicator": "volume_ratio", "operator": ">", "value": 1.5, "logic": "AND"},
+        {"name": "MACD 반전", "indicator": "MACD", "operator": ">", "value": "MACD_signal", "logic": "AND"}
+      ],
+      "sell": [
+        {"name": "볼린저밴드 중앙 도달", "indicator": "close", "operator": ">=", "value": "bollinger_mid"},
+        {"name": "RSI 50 도달", "indicator": "RSI", "operator": ">", "value": 50},
+        {"name": "MACD 약화", "indicator": "MACD", "operator": "cross_below", "value": "MACD_signal"}
+      ]
+    },
+    {
+      "name": "YSN Trend Following",
+      "description": "AI 기반 추세 추종. 골든크로스 + RSI 50~70 유지 → 강한 추세에서 수익 극대화",
+      "category": "Trend",
+      "position_size": 0.3,
+      "max_positions": 3,
+      "stop_loss": -0.05,
+      "take_profit": 0.12,
+      "trailing_stop": 0.03,
+      "buy": [
+        {"name": "골든크로스", "indicator": "ma_5", "operator": "cross_above", "value": "ma_20", "logic": "AND"},
+        {"name": "RSI 중립~강세", "indicator": "RSI", "operator": ">", "value": 50, "logic": "AND"},
+        {"name": "거래량 확인", "indicator": "volume_ratio", "operator": ">", "value": 1.2, "logic": "AND"},
+        {"name": "MACD 상승", "indicator": "MACD", "operator": ">", "value": "MACD_signal", "logic": "AND"}
+      ],
+      "sell": [
+        {"name": "데드크로스", "indicator": "ma_5", "operator": "cross_below", "value": "ma_20"},
+        {"name": "RSI 약화", "indicator": "RSI", "operator": "<", "value": 45},
+        {"name": "MACD 약화", "indicator": "MACD", "operator": "cross_below", "value": "MACD_signal"}
+      ]
+    },
+    {
+      "name": "YSN Scalping Pro",
+      "description": "AI 기반 단타 스캘핑. 짧은 호흡으로 빠른 진입/청산, 높은 승률 목표",
+      "category": "Scalping",
+      "position_size": 0.15,
+      "max_positions": 5,
+      "stop_loss": -0.015,
+      "take_profit": 0.025,
+      "buy": [
+        {"name": "RSI 상승 반전", "indicator": "RSI", "operator": ">", "value": "rsi_prev", "logic": "OR"},
+        {"name": "볼린저밴드 중앙 반등", "indicator": "close", "operator": "cross_above", "value": "bollinger_mid", "logic": "OR"},
+        {"name": "거래량 급증", "indicator": "volume_ratio", "operator": ">", "value": 1.8, "logic": "AND"}
+      ],
+      "sell": [
+        {"name": "목표 수익 도달", "indicator": "profit_rate", "operator": ">=", "value": 2.5},
+        {"name": "RSI 하락 반전", "indicator": "RSI", "operator": "<", "value": "rsi_prev"},
+        {"name": "볼린저밴드 중앙 하향", "indicator": "close", "operator": "cross_below", "value": "bollinger_mid"}
+      ]
+    },
+    {
+      "name": "YSN Breakout Hunter",
+      "description": "AI 기반 돌파 사냥. 신고가 돌파 + 강한 거래량 → 추가 상승 구간 진입",
+      "category": "Breakout",
+      "position_size": 0.2,
+      "max_positions": 4,
+      "stop_loss": -0.035,
+      "take_profit": 0.07,
+      "buy": [
+        {"name": "20일 신고가", "indicator": "close", "operator": ">", "value": "high_20d", "logic": "AND"},
+        {"name": "거래량 폭발", "indicator": "volume_ratio", "operator": ">", "value": 2.5, "logic": "AND"},
+        {"name": "RSI 강세", "indicator": "RSI", "operator": ">", "value": 60, "logic": "AND"}
+      ],
+      "sell": [
+        {"name": "RSI 과매수", "indicator": "RSI", "operator": ">", "value": 80},
+        {"name": "거래량 급감", "indicator": "volume_ratio", "operator": "<", "value": 0.5},
+        {"name": "5일선 하향", "indicator": "close", "operator": "cross_below", "value": "ma_5"}
+      ]
+    }
+  ]
+}

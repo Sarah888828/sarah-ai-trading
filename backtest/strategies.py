@@ -72,39 +72,52 @@ class Strategy:
         return False, None
 
     def _evaluate_condition(self, cond, row, prev_row):
-        """단일 조건 평가"""
         indicator = cond.get("indicator", "")
         operator = cond.get("operator", ">")
-        value = cond.get("value")
+        raw_value = cond.get("value")
 
         current_val = self._get_indicator_value(indicator, row)
-        prev_val = self._get_indicator_value(indicator, prev_row) if prev_row is not None else None
-
+        prev_val = self._get_indicator_value(indicator, prev_row) if prev_row else None
         if current_val is None:
             return False
 
-        # 크로스오버 조건
-        if operator == "cross_above" and prev_val is not None:
-            return prev_val <= value and current_val > value
-        if operator == "cross_below" and prev_val is not None:
-            return prev_val >= value and current_val < value
+        # value가 문자열(보조지표명)이면 row에서 값 조회
+        resolved = self._resolve_value(raw_value, row)
+        if resolved is None:
+            return False
 
-        # 비교 조건
+        if operator == "cross_above":
+            return prev_val is not None and prev_val <= resolved and current_val > resolved
+        if operator == "cross_below":
+            return prev_val is not None and prev_val >= resolved and current_val < resolved
         if operator == ">":
-            return current_val > value
+            return current_val > resolved
         if operator == ">=":
-            return current_val >= value
+            return current_val >= resolved
         if operator == "<":
-            return current_val < value
+            return current_val < resolved
         if operator == "<=":
-            return current_val <= value
+            return current_val <= resolved
         if operator == "==":
-            return current_val == value
-
+            return current_val == resolved
         return False
 
     def _get_indicator_value(self, indicator, row):
-        """지표값 조회"""
         if row is None:
             return None
         return row.get(indicator)
+
+    @staticmethod
+    def _resolve_value(raw, row):
+        """value가 지표명 문자열이면 row에서 값 조회, 숫자면 그대로 반환"""
+        if isinstance(raw, (int, float)):
+            return raw
+        if isinstance(raw, str) and row:
+            val = row.get(raw)
+            if val is not None:
+                return val
+            try:
+                return float(raw)
+            except (ValueError, TypeError):
+                return None
+        return raw
