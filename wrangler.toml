@@ -1,12 +1,12 @@
-name = "sarah-ai-trading"
+name = "sarah-ai-v2"
 main = "src/index.js"
 compatibility_date = "2026-11-15"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = []
 
 [[d1_databases]]
 binding = "DB"
 database_name = "sarah-ai-db"
-database_id = "YOUR_DATABASE_ID"
+database_id = "2a801b87-8c95-4ea0-8bf0-337f17bd5ed3"
 migrations_dir = "migrations"
 
 [triggers]
@@ -14,12 +14,3 @@ crons = ["0 3 * * *"]
 
 [vars]
 ENVIRONMENT = "production"
-
-# Durable Objects (24/7 백테스팅 엔진 + 상태 캐싱)
-[[durable_objects.bindings]]
-name = "TRADING_DO"
-class_name = "TradingDO"
-
-[[migrations]]
-tag = "v1"
-new_classes = ["TradingDO"]
