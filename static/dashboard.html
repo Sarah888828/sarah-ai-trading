@@ -3,589 +3,458 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sarah.ai — Stock Trading System</title>
+<title>Sarah.ai - AI 트레이딩 대시보드</title>
 <style>
-/* ===== RESET & BASE ===== */
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
-html { scroll-behavior:smooth; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family:var(--font);
-  background:var(--bg-deep);
-  color:var(--text-primary);
-  min-height:100vh;
-  overflow-x:hidden;
+  font-family: system-ui, -apple-system, 'Noto Sans KR', sans-serif;
+  background: #0a0a0f;
+  color: #e0e0e0;
+  min-height: 100vh;
+  overflow-x: hidden;
 }
-
-/* ===== CSS VARIABLES ===== */
-:root {
-  --bg-deep:#0a0a0f;
-  --bg-mid:#12121a;
-  --card-bg:rgba(255,255,255,0.03);
-  --card-border:rgba(255,255,255,0.06);
-  --glass-blur:16px;
-  --text-primary:#f1f5f9;
-  --text-secondary:#94a3b8;
-  --text-tertiary:#64748b;
-  --accent-1:#6366f1;
-  --accent-2:#8b5cf6;
-  --profit:#06b6d4;
-  --loss:#f43f5e;
-  --font:"Inter","Noto Sans KR",sans-serif;
-}
-
-/* ===== GLASS UTILITY ===== */
-.glass {
-  background:var(--card-bg);
-  backdrop-filter:blur(var(--glass-blur));
-  -webkit-backdrop-filter:blur(var(--glass-blur));
-  border:1px solid var(--card-border);
-  border-radius:16px;
-}
-
-/* ===== SCROLLBAR ===== */
-::-webkit-scrollbar { width:6px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.08); border-radius:3px; }
-::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,0.15); }
-
-/* ===== TOP NAV ===== */
-.nav-bar {
-  position:fixed;
-  top:0; left:0; right:0;
-  z-index:100;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 32px;
-  height:64px;
-  background:rgba(10,10,15,0.7);
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--card-border);
-}
-.logo {
-  display:flex;
-  align-items:center;
-  gap:12px;
-  font-weight:700;
-  font-size:1.15rem;
-  letter-spacing:-0.02em;
-}
-.logo-icon {
-  width:36px; height:36px;
-  border-radius:10px;
-  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:1.1rem;
-  font-weight:700;
-  color:#fff;
-}
-.logo span { color:var(--text-tertiary); font-weight:400; }
-.nav-links { display:flex; gap:4px; }
-.nav-links a {
-  display:flex;
-  align-items:center;
-  gap:6px;
-  padding:8px 18px;
-  border-radius:10px;
-  font-size:0.82rem;
-  font-weight:500;
-  color:var(--text-secondary);
-  text-decoration:none;
-  transition:all 0.25s ease;
-  cursor:pointer;
-  white-space:nowrap;
-}
-.nav-links a:hover { color:var(--text-primary); background:rgba(255,255,255,0.04); }
-.nav-links a.active {
-  color:#fff;
-  background:linear-gradient(135deg,rgba(99,102,241,0.2),rgba(139,92,246,0.2));
-  border:1px solid rgba(99,102,241,0.3);
-}
-.nav-links a .nav-icon { font-size:1rem; }
-
-/* ===== MAIN LAYOUT ===== */
-.main { margin-top:80px; padding:0 32px 40px; max-width:1320px; margin-left:auto; margin-right:auto; }
-
-/* ===== TAB CONTENT ===== */
-.tab-content { display:none; }
-.tab-content.active { display:block; }
-
-/* ===== SUMMARY TAB ===== */
-.section-title {
-  font-size:0.85rem;
-  font-weight:600;
-  color:var(--text-tertiary);
-  text-transform:uppercase;
-  letter-spacing:0.08em;
-  margin-bottom:16px;
-}
-.card-grid { display:grid; gap:16px; margin-bottom:32px; }
-.card-grid-4 { grid-template-columns:repeat(4,1fr); }
-.card-grid-3 { grid-template-columns:repeat(3,1fr); }
-.card {
-  padding:20px 22px;
-  border-radius:16px;
-  background:var(--card-bg);
-  border:1px solid var(--card-border);
-  backdrop-filter:blur(var(--glass-blur));
-  -webkit-backdrop-filter:blur(var(--glass-blur));
-}
-.card .label {
-  font-size:0.72rem;
-  color:var(--text-tertiary);
-  text-transform:uppercase;
-  letter-spacing:0.06em;
-  margin-bottom:6px;
-}
-.card .value {
-  font-size:1.35rem;
-  font-weight:700;
-  letter-spacing:-0.02em;
-}
-.text-profit { color:var(--profit); }
-.text-loss { color:var(--loss); }
-.text-tertiary { color:var(--text-tertiary); }
-
-/* ===== TABLE STYLES ===== */
-.table-wrap {
-  overflow-x:auto;
-  border-radius:16px;
-  background:var(--card-bg);
-  border:1px solid var(--card-border);
-  backdrop-filter:blur(var(--glass-blur));
-  -webkit-backdrop-filter:blur(var(--glass-blur));
-  margin-bottom:28px;
-}
-.table-wrap h3 {
-  padding:18px 22px 6px;
-  font-size:0.82rem;
-  font-weight:600;
-  color:var(--text-secondary);
-  letter-spacing:0.04em;
-}
-table {
-  width:100%;
-  border-collapse:collapse;
-  font-size:0.8rem;
-}
-thead th {
-  text-align:left;
-  padding:12px 18px;
-  font-weight:500;
-  color:var(--text-tertiary);
-  font-size:0.72rem;
-  text-transform:uppercase;
-  letter-spacing:0.06em;
-  border-bottom:1px solid var(--card-border);
-}
-tbody td {
-  padding:12px 18px;
-  border-bottom:1px solid rgba(255,255,255,0.03);
-  vertical-align:middle;
-}
-tbody tr:last-child td { border-bottom:none; }
-tbody tr:hover { background:rgba(255,255,255,0.02); }
-.badge {
-  display:inline-block;
-  padding:2px 10px;
-  border-radius:6px;
-  font-size:0.7rem;
-  font-weight:700;
-}
-.badge-buy { background:rgba(6,182,212,0.15); color:var(--profit); }
-.badge-sell { background:rgba(244,63,94,0.15); color:var(--loss); }
-
-/* ===== STRATEGY GRID ===== */
-.strategy-grid {
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-  gap:14px;
-}
-.strategy-grid .glass {
-  padding:18px 20px;
-  border-radius:12px;
-  transition:transform 0.2s ease, border-color 0.2s ease;
-  cursor:default;
-}
-.strategy-grid .glass:hover {
-  transform:translateY(-2px);
-  border-color:rgba(99,102,241,0.25);
-}
-
-/* ===== LOGS CONTAINER ===== */
-.logs-container {
-  background:rgba(0,0,0,0.35);
-  border:1px solid var(--card-border);
-  border-radius:12px;
-  padding:16px 20px;
-  font-family:"SF Mono","Fira Code","Consolas",monospace;
-  max-height:520px;
-  overflow-y:auto;
-  display:none;
-}
-
-/* ===== LOADING OVERLAY ===== */
+a { color: #a5b4fc; text-decoration: none; }
 #loadingOverlay {
-  position:fixed;
-  inset:0;
-  z-index:999;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:rgba(10,10,15,0.85);
-  backdrop-filter:blur(8px);
-  -webkit-backdrop-filter:blur(8px);
-  transition:opacity 0.5s ease;
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: #0a0a0f;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 9999;
 }
-#loadingOverlay.hidden {
-  opacity:0;
-  pointer-events:none;
+#loadingOverlay .spinner {
+  width: 50px; height: 50px;
+  border: 3px solid rgba(99,102,241,0.2);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
-.spinner {
-  width:44px; height:44px;
-  border-radius:50%;
-  border:3px solid rgba(255,255,255,0.06);
-  border-top-color:var(--accent-1);
-  animation:spin 0.8s linear infinite;
+#loadingOverlay p { margin-top: 20px; color: #888; font-size: 14px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; height: 60px; z-index: 1000;
+  background: rgba(10,10,15,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; padding: 0 30px;
 }
-@keyframes spin { to { transform:rotate(360deg); } }
-
-/* ===== SCROLL TO TOP ===== */
-#scrollTopBtn {
-  position:fixed;
-  bottom:28px; right:28px;
-  z-index:500;
-  width:44px; height:44px;
-  border-radius:12px;
-  border:1px solid var(--card-border);
-  background:rgba(18,18,26,0.85);
-  backdrop-filter:blur(12px);
-  -webkit-backdrop-filter:blur(12px);
-  color:var(--text-secondary);
-  font-size:1.2rem;
-  cursor:pointer;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  transition:all 0.25s ease;
-  opacity:0;
-  pointer-events:none;
+.navbar .logo {
+  font-size: 20px; font-weight: 700;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-right: 40px;
+  white-space: nowrap;
 }
-#scrollTopBtn.visible {
-  opacity:1;
-  pointer-events:auto;
+.nav-links { display: flex; gap: 6px; align-items: center; list-style: none; }
+.nav-links a {
+  padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: 500;
+  color: #888; transition: all 0.2s; white-space: nowrap;
+  background: transparent; border: none; cursor: pointer;
 }
-#scrollTopBtn:hover {
-  color:var(--text-primary);
-  border-color:rgba(99,102,241,0.4);
-  background:rgba(99,102,241,0.12);
+.nav-links a:hover { color: #ccc; background: rgba(255,255,255,0.05); }
+.nav-links a.active {
+  color: #fff;
+  background: linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.25));
+  border: 1px solid rgba(99,102,241,0.3);
 }
-
-/* ===== RESPONSIVE ===== */
-@media (max-width:960px) {
-  .card-grid-4 { grid-template-columns:repeat(2,1fr); }
-  .card-grid-3 { grid-template-columns:1fr; }
-  .nav-links a .nav-label { display:none; }
-  .nav-links a { padding:8px 12px; }
-  .nav-links a .nav-icon { font-size:1.2rem; }
+.main-content { padding-top: 80px; padding-bottom: 40px; }
+.container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.glass-card {
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.2s;
 }
-@media (max-width:600px) {
-  .nav-bar { padding:0 16px; }
-  .main { padding:0 16px 40px; }
-  .card-grid-4 { grid-template-columns:1fr; }
-  .card .value { font-size:1.1rem; }
+.glass-card:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.05); }
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
 }
+.summary-grid .glass-card { text-align: center; }
+.card-label { font-size: 13px; color: #888; margin-bottom: 8px; }
+.card-value { font-size: 26px; font-weight: 700; color: #fff; }
+.card-value.profit { color: #06b6d4; }
+.card-value.loss { color: #f43f5e; }
+.status-bar {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
+  font-size: 14px;
+}
+.status-bar .label { color: #888; }
+.status-bar .value { color: #ccc; font-weight: 500; }
+.table-container { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+thead th {
+  text-align: left; padding: 12px 16px;
+  color: #888; font-weight: 500; font-size: 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+tbody td { padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.04); color: #ccc; }
+tbody tr:hover { background: rgba(255,255,255,0.02); }
+.profit { color: #06b6d4 !important; }
+.loss { color: #f43f5e !important; }
+.badge {
+  display: inline-block; padding: 2px 10px; border-radius: 6px;
+  font-size: 11px; font-weight: 600;
+}
+.badge-buy { background: rgba(6,182,212,0.15); color: #06b6d4; }
+.badge-sell { background: rgba(244,63,94,0.15); color: #f43f5e; }
+.section-title {
+  font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+.strategy-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+.strat-name { font-size: 16px; font-weight: 600; color: #fff; margin-bottom: 4px; }
+.strat-cat { font-size: 12px; color: #6366f1; margin-bottom: 8px; }
+.strat-desc { font-size: 13px; color: #888; line-height: 1.5; }
+.logs-container {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 16px;
+  max-height: 500px;
+  overflow-y: auto;
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.7;
+}
+.log-line { padding: 2px 0; color: #999; }
+.log-time { color: #6366f1; }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 </style>
 </head>
 <body>
-<!-- ===== LOADING OVERLAY ===== -->
+
+<!-- Loading Overlay -->
 <div id="loadingOverlay">
   <div class="spinner"></div>
+  <p>데이터를 불러오는 중...</p>
 </div>
 
-<!-- ===== TOP NAV BAR ===== -->
-<nav class="nav-bar">
-  <div class="logo">
-    <div class="logo-icon">S</div>
-    Sarah.ai <span>Trading</span>
-  </div>
+<!-- Nav -->
+<nav class="navbar">
+  <div class="logo">Sarah.ai</div>
   <div class="nav-links">
-    <a href="#" data-tab="summary" class="active">
-      <span class="nav-icon">📊</span>
-      <span class="nav-label">Summary</span>
-    </a>
-    <a href="#" data-tab="portfolio">
-      <span class="nav-icon">💼</span>
-      <span class="nav-label">Portfolio</span>
-    </a>
-    <a href="#" data-tab="strategies">
-      <span class="nav-icon">🧠</span>
-      <span class="nav-label">Strategies</span>
-    </a>
-    <a href="#" data-tab="backtest">
-      <span class="nav-icon">🔬</span>
-      <span class="nav-label">Backtest</span>
-    </a>
-    <a href="#" data-tab="settings">
-      <span class="nav-icon">⚙️</span>
-      <span class="nav-label">Settings</span>
-    </a>
+    <a href="#" data-tab="summary" class="active">📊 AI 요약</a>
+    <a href="#" data-tab="portfolio">📦 포트폴리오</a>
+    <a href="#" data-tab="strategies">🧠 전략</a>
+    <a href="#" data-tab="backtest">📈 백테스팅</a>
+    <a href="#" data-tab="settings">⚙️ 설정</a>
   </div>
 </nav>
 
-<!-- ===== MAIN CONTENT ===== -->
-<div class="main">
+<!-- Main -->
+<div class="main-content">
 
-  <!-- ===== TAB: SUMMARY ===== -->
-  <div id="tab-summary" class="tab-content" style="display:block;">
-    <div class="section-title">Market Overview</div>
-    <div class="card-grid card-grid-3" style="margin-bottom:32px;">
-      <div class="card">
-        <div class="label">Market Status</div>
-        <div id="marketStatus" class="value" style="font-size:1rem;">—</div>
+  <!-- Tab: Summary -->
+  <div id="tab-summary" class="tab-content active">
+    <div class="container">
+      <div class="status-bar">
+        <span class="label">🕒 서버 시간:</span>
+        <span class="value" id="srvTime">--</span>
+        <span style="color:#444">|</span>
+        <span class="label">📈 시장 상태:</span>
+        <span class="value" id="mktStatus">--</span>
       </div>
-      <div class="card">
-        <div class="label">KOSPI</div>
-        <div class="value" style="font-size:1rem;color:var(--text-tertiary);">—</div>
-      </div>
-      <div class="card">
-        <div class="label">KOSDAQ</div>
-        <div class="value" style="font-size:1rem;color:var(--text-tertiary);">—</div>
-      </div>
-    </div>
-    <div class="section-title">Account Summary</div>
-    <div class="card-grid card-grid-4">
-      <div class="card">
-        <div class="label">Total Balance</div>
-        <div id="totalBalance" class="value">—</div>
-      </div>
-      <div class="card">
-        <div class="label">Invested</div>
-        <div id="invested" class="value">—</div>
-      </div>
-      <div class="card">
-        <div class="label">Available</div>
-        <div id="available" class="value">—</div>
-      </div>
-      <div class="card">
-        <div class="label">Profit Rate</div>
-        <div id="profitRate" class="value">—</div>
+      <div class="summary-grid">
+        <div class="glass-card">
+          <div class="card-label">💰 총 자산</div>
+          <div class="card-value" id="totalVal">--</div>
+        </div>
+        <div class="glass-card">
+          <div class="card-label">📊 투자 금액</div>
+          <div class="card-value" id="invVal">--</div>
+        </div>
+        <div class="glass-card">
+          <div class="card-label">💵 예수금</div>
+          <div class="card-value" id="availVal">--</div>
+        </div>
+        <div class="glass-card">
+          <div class="card-label">📈 총 수익률</div>
+          <div class="card-value" id="profitVal">--</div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- ===== TAB: PORTFOLIO ===== -->
+  <!-- Tab: Portfolio -->
   <div id="tab-portfolio" class="tab-content">
-    <div class="table-wrap">
-      <h3>📋 Positions</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Stock</th>
-            <th>Buy Price</th>
-            <th>Qty</th>
-            <th>Invested</th>
-            <th>Current</th>
-            <th>Profit</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody id="portfolioBody">
-          <tr><td colspan="7"><div style="text-align:center;padding:30px;color:var(--text-tertiary)">Loading...</div></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="table-wrap">
-      <h3>🔄 Recent Trades</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Type</th>
-            <th>Stock</th>
-            <th>Price</th>
-            <th>Qty</th>
-            <th>Amount</th>
-            <th>P&amp;L</th>
-            <th>Date</th>
-          </tr>
-        </thead>
-        <tbody id="tradesBody">
-          <tr><td colspan="7"><div style="text-align:center;padding:30px;color:var(--text-tertiary)">Loading...</div></td></tr>
-        </tbody>
-      </table>
+    <div class="container">
+      <div class="section-title">📦 포트폴리오</div>
+      <div class="glass-card mb-24">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>종목</th>
+                <th>매입가</th>
+                <th>수량</th>
+                <th>투자금액</th>
+                <th>현재가</th>
+                <th>수익률</th>
+                <th>매입일</th>
+              </tr>
+            </thead>
+            <tbody id="portfolioBody">
+              <tr><td colspan="7" style="text-align:center;padding:30px;color:#666">데이터 로딩 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="section-title">📋 최근 거래 내역</div>
+      <div class="glass-card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>구분</th>
+                <th>종목</th>
+                <th>가격</th>
+                <th>수량</th>
+                <th>금액</th>
+                <th>수익률</th>
+                <th>일시</th>
+              </tr>
+            </thead>
+            <tbody id="tradesBody">
+              <tr><td colspan="7" style="text-align:center;padding:30px;color:#666">데이터 로딩 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ===== TAB: STRATEGIES ===== -->
+  <!-- Tab: Strategies -->
   <div id="tab-strategies" class="tab-content">
-    <div class="section-title">Trading Strategies</div>
-    <div id="strategyGrid" class="strategy-grid">
-      <div style="text-align:center;padding:30px;color:var(--text-tertiary);grid-column:1/-1;">Loading...</div>
+    <div class="container">
+      <div class="section-title">🧠 트레이딩 전략</div>
+      <div id="strategyGrid" class="strategy-grid">
+        <div style="text-align:center;padding:30px;color:#666;grid-column:1/-1;">데이터 로딩 중...</div>
+      </div>
     </div>
   </div>
 
-  <!-- ===== TAB: BACKTEST ===== -->
+  <!-- Tab: Backtest -->
   <div id="tab-backtest" class="tab-content">
-    <div class="table-wrap">
-      <h3>📈 Backtest Results</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Strategy</th>
-            <th>Return</th>
-            <th>Win Rate</th>
-            <th>Max DD</th>
-            <th>Profit Factor</th>
-            <th>Trades</th>
-          </tr>
-        </thead>
-        <tbody id="backtestBody">
-          <tr><td colspan="7"><div style="text-align:center;padding:30px;color:var(--text-tertiary)">Loading...</div></td></tr>
-        </tbody>
-      </table>
+    <div class="container">
+      <div class="section-title">📈 백테스팅 결과</div>
+      <div class="glass-card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>전략명</th>
+                <th>총 수익률</th>
+                <th>승률</th>
+                <th>최대 낙폭</th>
+                <th>Profit Factor</th>
+                <th>총 거래</th>
+              </tr>
+            </thead>
+            <tbody id="backtestBody">
+              <tr><td colspan="7" style="text-align:center;padding:30px;color:#666">데이터 로딩 중...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- ===== TAB: SETTINGS ===== -->
+  <!-- Tab: Settings -->
   <div id="tab-settings" class="tab-content">
-    <div class="section-title">System Logs</div>
-    <div id="logsContainer" class="logs-container">Loading...</div>
+    <div class="container">
+      <div class="section-title">⚙️ 시스템 로그</div>
+      <div class="glass-card">
+        <div id="logsContainer" class="logs-container">
+          <div class="log-line" style="color:#666">데이터 로딩 중...</div>
+        </div>
+      </div>
+    </div>
   </div>
 
 </div>
 
-<!-- ===== SCROLL TO TOP BUTTON ===== -->
-<button id="scrollTopBtn" title="Scroll to top">↑</button>
-<!-- ===== JAVASCRIPT ===== -->
 <script>
 (function(){
-"use strict";
 var REFRESH_INTERVAL = 10000;
 var currentTab = 'summary';
 
 function switchTab(tabId) {
   currentTab = tabId;
-  document.querySelectorAll('.tab-content').forEach(function(el) { el.style.display = 'none'; });
+  var tabs = document.querySelectorAll('.tab-content');
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].classList.remove('active');
+  }
   var tab = document.getElementById('tab-' + tabId);
-  if (tab) tab.style.display = 'block';
-  document.querySelectorAll('.nav-links a').forEach(function(el) { el.classList.remove('active'); });
+  if (tab) tab.classList.add('active');
+  var links = document.querySelectorAll('.nav-links a');
+  for (var i = 0; i < links.length; i++) {
+    links[i].classList.remove('active');
+  }
   var link = document.querySelector('.nav-links a[data-tab="' + tabId + '"]');
   if (link) link.classList.add('active');
-  loadTab(tabId);
+  loadTabData(tabId);
 }
 
-function loadTab(tabId) {
-  var urls = [];
-  if (tabId === 'summary') urls = ['/api/status', '/api/account'];
-  else if (tabId === 'portfolio') urls = ['/api/positions', '/api/trades'];
-  else if (tabId === 'strategies') urls = ['/api/strategies'];
-  else if (tabId === 'backtest') urls = ['/api/backtest/run_all'];
-  else if (tabId === 'settings') urls = ['/api/logs'];
-
-  Promise.all(urls.map(function(u) { return fetch(u).then(function(r) { return r.json(); }).catch(function() { return null; }); }))
-  .then(function(results) {
-    if (tabId === 'summary' && results[0]) renderSummary(results[0], results[1]);
-    else if (tabId === 'portfolio') renderPortfolio(results[0], results[1]);
-    else if (tabId === 'strategies') renderStrategies(results[0]);
-    else if (tabId === 'backtest') renderBacktest(results[0]);
-    else if (tabId === 'settings') renderLogsView(results[0]);
-  });
+function loadTabData(tabId) {
+  var url = '';
+  if (tabId === 'summary') {
+    Promise.all([fetch('/api/status').then(function(r){return r.json()}), fetch('/api/account').then(function(r){return r.json()})])
+      .then(function(res){renderSummary(res[0], res[1])})['catch'](function(){});
+    return;
+  } else if (tabId === 'portfolio') {
+    Promise.all([fetch('/api/positions').then(function(r){return r.json()}), fetch('/api/trades').then(function(r){return r.json()})])
+      .then(function(res){renderPortfolio(res[0], res[1])})['catch'](function(){});
+    return;
+  } else if (tabId === 'strategies') { url = '/api/strategies'; }
+  else if (tabId === 'backtest') { url = '/api/backtest/run_all'; }
+  else if (tabId === 'settings') { url = '/api/logs'; }
+  if (url) {
+    fetch(url).then(function(r){return r.json()}).then(function(data){
+      if (tabId === 'strategies') renderStrategies(data);
+      else if (tabId === 'backtest') renderBacktest(data);
+      else if (tabId === 'settings') renderLogs(data);
+    })['catch'](function(){});
+  }
 }
 
 function renderSummary(status, account) {
-  if (status) { setText('marketStatus', status.market_open ? '● Long' : '○ Closed'); }
-  if (account) {
-    setText('totalBalance', (account.total_balance||0).toLocaleString() + '원');
-    setText('invested', (account.invested||0).toLocaleString() + '원');
-    setText('available', (account.available||0).toLocaleString() + '원');
-    var pr = account.total_profit_rate||0;
-    var el = document.getElementById('profitRate');
-    if (el) { el.textContent = (pr>=0?'+':'') + pr.toFixed(2) + '%'; el.className = 'value ' + (pr>=0?'text-profit':'text-loss'); }
+  if (status) {
+    var el = document.getElementById('srvTime');
+    if (el) el.textContent = status.server_time || '';
+    el = document.getElementById('mktStatus');
+    if (el) el.textContent = status.market_open ? '● 장중' : '○ 장마감';
   }
-}
-
+  if (account) {
+    setText('totalVal', (account.total_balance || 0).toLocaleString() + '원');
+    setText('invVal', (account.invested || 0).toLocaleString() + '원');
+    setText('availVal', (account.available || 0).toLocaleString() + '원');
+    var pr = account.total_profit_rate || 0;
+    var el = document.getElementById('profitVal');
+    if (el) {
+      el.textContent = (pr >= 0 ? '+' : '') + pr.toFixed(2) + '%';
+      el.className = 'card-value ' + (pr >= 0 ? 'profit' : 'loss');
+    }
+  }
 function renderPortfolio(positions, trades) {
   var pb = document.getElementById('portfolioBody');
   if (pb) {
-    if (positions && positions.positions && positions.positions.length) {
-      pb.innerHTML = positions.positions.map(function(p) {
-        return '<tr><td><strong>' + (p.stock_name||p.stock_code) + '</strong></td><td>' + (p.buy_price||0).toLocaleString() + '</td><td>' + (p.quantity||0) + '</td><td>' + (p.invested||0).toLocaleString() + '</td><td>' + (p.current_price||0).toLocaleString() + '</td><td class="' + ((p.profit_rate||0)>=0?'text-profit':'text-loss') + '">' + ((p.profit_rate||0)>=0?'+':'') + (p.profit_rate||0).toFixed(2) + '%</td><td class="text-tertiary">' + (p.buy_date||'') + '</td></tr>';
-      }).join('');
-    } else { pb.innerHTML = '<tr><td colspan="7"><div style="text-align:center;padding:30px;color:var(--text-tertiary)">No positions</div></td></tr>'; }
+    if (positions && positions.positions && positions.positions.length > 0) {
+      var html = '';
+      for (var i = 0; i < positions.positions.length; i++) {
+        var p = positions.positions[i];
+        var pr = p.profit_rate || 0;
+        html += '<tr><td>' + (p.stock_name || p.stock_code) + '</td><td>' + (p.buy_price || 0).toLocaleString() + '</td><td>' + (p.quantity || 0) + '</td><td>' + (p.invested || 0).toLocaleString() + '</td><td>' + (p.current_price || 0).toLocaleString() + '</td><td class="' + (pr >= 0 ? 'profit' : 'loss') + '">' + (pr >= 0 ? '+' : '') + pr.toFixed(2) + '%</td><td>' + (p.buy_date || '') + '</td></tr>';
+      }
+      pb.innerHTML = html;
+    } else {
+      pb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#666">보유 종목 없음</td></tr>';
+    }
   }
   var tb = document.getElementById('tradesBody');
   if (tb) {
-    if (trades && trades.trades && trades.trades.length) {
-      tb.innerHTML = trades.trades.map(function(t) {
-        return '<tr><td><span class="badge ' + (t.type==='buy'?'badge-buy':'badge-sell') + '">' + (t.type==='buy'?'B':'S') + '</span></td><td><strong>' + (t.stock_name||t.stock_code) + '</strong></td><td>' + (t.price||0).toLocaleString() + '</td><td>' + (t.quantity||0) + '</td><td>' + (t.amount||0).toLocaleString() + '</td><td class="' + ((t.profit_rate||0)>=0?'text-profit':'text-loss') + '">' + (t.profit_rate!=null ? ((t.profit_rate>=0?'+':'')+t.profit_rate.toFixed(2)+'%') : '-') + '</td><td class="text-tertiary">' + (t.date||'') + '</td></tr>';
-      }).join('');
-    } else { tb.innerHTML = '<tr><td colspan="7"><div style="text-align:center;padding:30px;color:var(--text-tertiary)">No trades</div></td></tr>'; }
+    if (trades && trades.trades && trades.trades.length > 0) {
+      var html = '';
+      for (var i = 0; i < trades.trades.length; i++) {
+        var t = trades.trades[i];
+        html += '<tr><td><span class="badge ' + (t.type === 'buy' ? 'badge-buy' : 'badge-sell') + '">' + (t.type === 'buy' ? '매수' : '매도') + '</span></td><td>' + (t.stock_name || t.stock_code) + '</td><td>' + (t.price || 0).toLocaleString() + '</td><td>' + (t.quantity || 0) + '</td><td>' + (t.amount || 0).toLocaleString() + '</td><td>' + (t.profit_rate != null ? (t.profit_rate >= 0 ? '+' : '') + t.profit_rate.toFixed(2) + '%' : '-') + '</td><td>' + (t.date || '') + '</td></tr>';
+      }
+      tb.innerHTML = html;
+    } else {
+      tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#666">거래 내역 없음</td></tr>';
+    }
   }
 }
+
 function renderStrategies(data) {
   var grid = document.getElementById('strategyGrid');
-  if (grid) {
-    if (data && data.strategies && data.strategies.length) {
-      grid.innerHTML = data.strategies.map(function(s) { return '<div class="glass" style="padding:16px;border-radius:12px"><div style="font-weight:600;font-size:0.9rem">' + s.name + '</div><div style="color:var(--text-tertiary);font-size:0.7rem;margin:4px 0">' + (s.category||'General') + '</div><div style="color:var(--text-secondary);font-size:0.75rem;margin-top:6px">' + (s.description||'').slice(0,80) + '</div></div>'; }).join('');
-    } else { grid.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-tertiary)">No strategies</div>'; }
+  if (!grid) return;
+  if (data && data.strategies && data.strategies.length > 0) {
+    var html = '';
+    for (var i = 0; i < data.strategies.length; i++) {
+      var s = data.strategies[i];
+      html += '<div class="glass-card"><div class="strat-name">' + s.name + '</div><div class="strat-cat">' + (s.category || 'General') + '</div><div class="strat-desc">' + (s.description || '').substring(0, 80) + '</div></div>';
+    }
+    grid.innerHTML = html;
+  } else {
+    grid.innerHTML = '<div style="text-align:center;padding:30px;color:#666">전략 없음</div>';
   }
 }
 
 function renderBacktest(data) {
   var bt = document.getElementById('backtestBody');
-  if (bt) {
-    if (data && data.results && data.results.length) {
-      bt.innerHTML = data.results.map(function(r,i) {
-        var s = r.result && r.result.summary ? r.result.summary : {};
-        return '<tr><td class="text-tertiary">' + (i+1) + '</td><td><strong>' + r.name + '</strong></td><td class="' + ((s.total_return||0)>=0?'text-profit':'text-loss') + '">' + ((s.total_return||0)>=0?'+':'') + (s.total_return||0).toFixed(2) + '%</td><td>' + (s.win_rate||0).toFixed(1) + '%</td><td class="text-loss">-</td><td>' + (s.profit_factor||0).toFixed(2) + '</td><td>' + (s.total_trades||0) + '</td></tr>';
-      }).join('');
-    } else { bt.innerHTML = '<tr><td colspan="7"><div style="text-align:center;padding:30px;color:var(--text-tertiary)">Run backtest first</div></td></tr>'; }
+  if (!bt) return;
+  if (data && data.results && data.results.length > 0) {
+    var html = '';
+    for (var i = 0; i < data.results.length; i++) {
+      var r = data.results[i];
+      var sm = (r.result && r.result.summary) ? r.result.summary : {};
+      var ret = sm.total_return || 0;
+      html += '<tr><td>' + (i + 1) + '</td><td>' + r.name + '</td><td class="' + (ret >= 0 ? 'profit' : 'loss') + '">' + (ret >= 0 ? '+' : '') + ret.toFixed(2) + '%</td><td>' + (sm.win_rate || 0).toFixed(1) + '%</td><td>' + (sm.max_drawdown || 0).toFixed(1) + '%</td><td>' + (sm.profit_factor || 0).toFixed(2) + '</td><td>' + (sm.total_trades || 0) + '</td></tr>';
+    }
+    bt.innerHTML = html;
+  } else {
+    bt.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:#666">백테스트 결과 없음</td></tr>';
   }
 }
 
-function renderLogsView(data) {
+function renderLogs(data) {
   var lc = document.getElementById('logsContainer');
-  if (lc) {
-    if (data && data.logs && data.logs.length) {
-      lc.innerHTML = data.logs.slice(-30).map(function(l) { return '<div style="padding:2px 0;font-size:0.75rem"><span style="color:var(--text-tertiary)">[' + (l.time||'') + ']</span> <span>' + (l.message||'') + '</span></div>'; }).join('');
-    } else { lc.innerHTML = '<div style="padding:20px;color:var(--text-tertiary)">No logs</div>'; }
-    lc.style.display = 'block';
+  if (!lc) return;
+  if (data && data.logs && data.logs.length > 0) {
+    var html = '';
+    var items = data.logs.slice(-30);
+    for (var i = 0; i < items.length; i++) {
+      html += '<div class="log-line"><span class="log-time">[' + (items[i].time || '') + ']</span> ' + (items[i].message || '') + '</div>';
+    }
+    lc.innerHTML = html;
   }
 }
 
-function setText(id, text) { var el = document.getElementById(id); if (el) el.textContent = text; }
+function setText(id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; }
 
-// Scroll to top button
-var scrollBtn = document.getElementById('scrollTopBtn');
-if (scrollBtn) {
-  window.addEventListener('scroll', function() {
-    if (window.scrollY > 200) { scrollBtn.classList.add('visible'); }
-    else { scrollBtn.classList.remove('visible'); }
-  });
-  scrollBtn.addEventListener('click', function() {
-    window.scrollTo({ top:0, behavior:'smooth' });
-  });
-}
-
-// Init
 document.addEventListener('DOMContentLoaded', function() {
-  document.querySelectorAll('.nav-links a').forEach(function(el) {
-    el.addEventListener('click', function(e) {
+  setTimeout(function() {
+    var ov = document.getElementById('loadingOverlay');
+    if (ov) ov.style.display = 'none';
+  }, 1000);
+
+  var links = document.querySelectorAll('.nav-links a');
+  for (var i = 0; i < links.length; i++) {
+    links[i].addEventListener('click', function(e) {
       e.preventDefault();
       var tabId = this.getAttribute('data-tab');
       if (tabId) switchTab(tabId);
     });
-  });
-  var overlay = document.getElementById('loadingOverlay');
-  if (overlay) { overlay.classList.add('hidden'); }
+  }
+
   switchTab('summary');
-  setInterval(function() { loadTab(currentTab); }, REFRESH_INTERVAL);
+  setInterval(function() { loadTabData(currentTab); }, REFRESH_INTERVAL);
 });
 })();
 </script>
+
 </body>
 </html>
