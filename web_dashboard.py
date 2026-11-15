@@ -4,8 +4,7 @@
 기본 주소: http://127.0.0.1:5000
 """
 
-import os
-import logging
+import json, os, logging
 from datetime import datetime, timedelta
 from flask import Flask, jsonify
 
@@ -173,6 +172,32 @@ def api_strategies():
          "description": "하단 돌파 매수, 상단 돌파 매도",
          "params": {"period": 20, "std_dev": 2}},
     ]})
+
+@app.route("/api/backtest/run")
+def api_backtest_run():
+    try:
+        from backtest import BacktestEngine, load_strategy
+        sp = os.path.join(os.path.dirname(__file__), "backtest", "sample_strategy.json")
+        with open(sp, "r", encoding="utf-8") as f:
+            sc = json.load(f)
+        s = load_strategy(sc)
+        from run_backtest import generate_sample_data
+        d = generate_sample_data(252)
+        r = BacktestEngine(initial_capital=10000000).run(d, s)
+        return jsonify(r.to_dict())
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/backtest/strategies")
+def api_backtest_strategies():
+    sd = os.path.join(os.path.dirname(__file__), "backtest")
+    r = []
+    for f in os.listdir(sd):
+        if f.endswith(".json"):
+            with open(os.path.join(sd, f), "r", encoding="utf-8") as fp:
+                c = json.load(fp)
+            r.append({"file": f, "name": c.get("name", f)})
+    return jsonify({"strategies": r})
 
 
 if __name__ == "__main__":

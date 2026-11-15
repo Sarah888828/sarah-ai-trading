@@ -1,0 +1,38 @@
+{
+  "name": "골든크로스 + RSI + 볼린저밴드",
+  "description": "Logic Works 전략: 여러 조건을 조합한 매수/매도 신호",
+  "position_size": 0.3,
+  "max_positions": 3,
+  "stop_loss": -0.03,
+  "take_profit": 0.06,
+  "buy": [
+    {
+      "name": "단기추세 상승",
+      "indicator": "ma_5",
+      "operator": "cross_above",
+      "value": 20,
+      "logic": "OR"
+    },
+    {
+      "name": "RSI 과매도",
+      "indicator": "RSI",
+      "operator": "<",
+      "value": 40,
+      "logic": "OR"
+    }
+  ],
+  "sell": [
+    {
+      "name": "RSI 과매수",
+      "indicator": "RSI",
+      "operator": ">",
+      "value": 70
+    },
+    {
+      "name": "단기추세 하락",
+      "indicator": "ma_5",
+      "operator": "cross_below",
+      "value": 20
+    }
+  ]
+}
