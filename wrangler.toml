@@ -1,9 +1,16 @@
-name = "stock-trading"
-pages_build_output_dir = "."
-compatibility_date = "2026-11-01"
+name = "sarah-ai-trading"
+main = "src/index.js"
+compatibility_date = "2026-11-15"
+compatibility_flags = ["nodejs_compat"]
 
 [[d1_databases]]
 binding = "DB"
-database_name = "stock-trading-db"
+database_name = "sarah-ai-db"
 database_id = "YOUR_DATABASE_ID"
 migrations_dir = "migrations"
+
+[triggers]
+crons = ["0 3 * * *"]
+
+[vars]
+ENVIRONMENT = "production"

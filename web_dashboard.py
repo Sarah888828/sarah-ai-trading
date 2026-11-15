@@ -8,13 +8,47 @@ import json, os, logging
 from datetime import datetime, timedelta
 from flask import Flask, jsonify, request
 
-from db.manager import DatabaseManager
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 DB_PATH = os.path.join(DATA_DIR, "trading.db")
+
+# ============================================================
+# DB 초기화: 로컬 SQLite + 샘플 데이터 시드
+# ============================================================
+def _init_db():
+    """SQLite DB 초기화 및 샘플 데이터 시드"""
+    from db.manager import DatabaseManager
+    db = DatabaseManager()
+    db.initialize()
+
+    # 샘플 데이터가 없으면 시드
+    if not db.get_positions():
+        logger.info("샘플 데이터 시드 중...")
+        _seed_data(db)
+
+def _seed_data(db):
+    """샘플 포지션 및 거래내역 추가"""
+    samples = [
+        {"stock_code": "005930", "stock_name": "삼성전자", "buy_price": 72000, "quantity": 10},
+        {"stock_code": "000660", "stock_name": "SK하이닉스", "buy_price": 185000, "quantity": 5},
+        {"stock_code": "035420", "stock_name": "NAVER", "buy_price": 215000, "quantity": 3},
+    ]
+    for s in samples:
+        db.save_position(s)
+
+    trade_samples = [
+        {"trade_type": "buy", "stock_code": "005930", "stock_name": "삼성전자", "price": 71500, "quantity": 10, "amount": 715000},
+        {"trade_type": "buy", "stock_code": "000660", "stock_name": "SK하이닉스", "price": 183000, "quantity": 5, "amount": 915000},
+        {"trade_type": "sell", "stock_code": "373220", "stock_name": "LG에너지솔루션", "price": 420000, "quantity": 2, "amount": 840000, "profit_rate": 0.052},
+    ]
+    for t in trade_samples:
+        db.save_trade_log(t)
+    logger.info("샘플 데이터 시드 완료")
+
+_init_db()
 
 
 def _is_market_open():
@@ -76,19 +110,29 @@ def _sample_logs():
 
 
 def _load_positions():
+    """DB에서 포지션 조회 (D1_API_BASE 환경변수 설정 시 D1 사용)"""
+    from db.manager import DatabaseManager
     try:
         db = DatabaseManager(d1_api_base=os.environ.get("D1_API_BASE"))
-        return db.get_positions()
-    except:
-        return _sample_positions()
+        result = db.get_positions()
+        if result:
+            return result
+    except Exception as e:
+        logger.warning(f"DB 조회 실패, 샘플 사용: {e}")
+    return _sample_positions()
 
 
 def _load_trades():
+    """DB에서 매매내역 조회 (D1_API_BASE 환경변수 설정 시 D1 사용)"""
+    from db.manager import DatabaseManager
     try:
         db = DatabaseManager(d1_api_base=os.environ.get("D1_API_BASE"))
-        return db.get_trade_logs()
-    except:
-        return _sample_trades()
+        result = db.get_trade_logs()
+        if result:
+            return result
+    except Exception as e:
+        logger.warning(f"DB 조회 실패, 샘플 사용: {e}")
+    return _sample_trades()
 
 
 def _load_logs():
