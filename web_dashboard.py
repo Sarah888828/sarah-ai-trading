@@ -12,7 +12,7 @@ from db.manager import DatabaseManager
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-app = Flask(__name__, static_folder="static", static_url_path="")
+app = Flask(__name__)
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 DB_PATH = os.path.join(DATA_DIR, "trading.db")
 
@@ -122,6 +122,9 @@ def _get_profit_rate():
         return 0.0
     profit = sum(p.get("invested", 0) * p.get("profit_rate", 0) / 100 for p in positions)
     return round(profit / total * 100, 2)
+@app.route("/")
+def index():
+    return open(os.path.join(os.path.dirname(__file__), "static", "dashboard.html"), encoding="utf-8").read()
 @app.route("/api/status")
 def api_status():
     return jsonify({
