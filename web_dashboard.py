@@ -9,6 +9,7 @@ import logging
 from datetime import datetime, timedelta
 from flask import Flask, jsonify
 
+from db.manager import DatabaseManager
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -77,44 +78,18 @@ def _sample_logs():
 
 def _load_positions():
     try:
-        if os.path.exists(DB_PATH):
-            from sqlalchemy import create_engine
-            from sqlalchemy.orm import sessionmaker
-            engine = create_engine(f"sqlite:///{DB_PATH}")
-            session = sessionmaker(bind=engine)()
-            from db.models import Position
-            rows = session.query(Position).all()
-            session.close()
-            if rows:
-                return [{"stock_code": r.stock_code, "stock_name": r.stock_name,
-                         "buy_price": r.buy_price, "quantity": r.quantity,
-                         "invested": r.buy_price * r.quantity,
-                         "current_price": r.buy_price, "profit_rate": 0.0,
-                         "buy_date": r.buy_date.strftime("%Y-%m-%d")} for r in rows]
+        db = DatabaseManager(d1_api_base=os.environ.get("D1_API_BASE"))
+        return db.get_positions()
     except:
-        pass
-    return _sample_positions()
+        return _sample_positions()
 
 
 def _load_trades():
     try:
-        if os.path.exists(DB_PATH):
-            from sqlalchemy import create_engine
-            from sqlalchemy.orm import sessionmaker
-            engine = create_engine(f"sqlite:///{DB_PATH}")
-            session = sessionmaker(bind=engine)()
-            from db.models import TradeLog
-            rows = session.query(TradeLog).order_by(TradeLog.traded_at.desc()).limit(20).all()
-            session.close()
-            if rows:
-                return [{"type": r.trade_type, "stock_name": r.stock_name,
-                         "stock_code": r.stock_code, "price": r.price,
-                         "quantity": r.quantity, "amount": r.amount,
-                         "profit_rate": round(r.profit_rate * 100, 2) if r.profit_rate else None,
-                         "date": r.traded_at.strftime("%Y-%m-%d %H:%M")} for r in rows]
+        db = DatabaseManager(d1_api_base=os.environ.get("D1_API_BASE"))
+        return db.get_trade_logs()
     except:
-        pass
-    return _sample_trades()
+        return _sample_trades()
 
 
 def _load_logs():
