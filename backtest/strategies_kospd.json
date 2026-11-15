@@ -1,0 +1,44 @@
+{
+  "strategies": [
+    {
+      "name": "KOSPD ETF 모멘텀",
+      "description": "KOSPD 기반 ETF 모멘텀 전략. 단기 수익률 상위 ETF 추세 추종 + 괴리율 확인",
+      "category": "ETF",
+      "position_size": 0.2,
+      "max_positions": 5,
+      "stop_loss": -0.03,
+      "take_profit": 0.06,
+      "trailing_stop": 0.02,
+      "buy": [
+        {"name": "1일 수익률 상위", "indicator": "daily_return", "operator": ">", "value": 1.0, "logic": "AND"},
+        {"name": "거래량 증가", "indicator": "volume_ratio", "operator": ">", "value": 1.5, "logic": "AND"},
+        {"name": "괴리율 양호", "indicator": "premium_rate", "operator": "<", "value": 0.5, "logic": "AND"},
+        {"name": "RSI 중립", "indicator": "RSI", "operator": "<", "value": 70, "logic": "AND"}
+      ],
+      "sell": [
+        {"name": "수익률 둔화", "indicator": "daily_return", "operator": "<", "value": -0.5},
+        {"name": "거래량 급감", "indicator": "volume_ratio", "operator": "<", "value": 0.5},
+        {"name": "RSI 과매수", "indicator": "RSI", "operator": ">", "value": 75},
+        {"name": "괴리율 확대", "indicator": "premium_rate", "operator": ">", "value": 1.0}
+      ]
+    },
+    {
+      "name": "KOSPD ETF 괴리율 역전",
+      "description": "ETF 괴리율이 과도한 할인 상태에서 매수, 프리미엄 상태에서 매도",
+      "category": "ETF",
+      "position_size": 0.15,
+      "max_positions": 3,
+      "stop_loss": -0.04,
+      "take_profit": 0.08,
+      "buy": [
+        {"name": "괴리율 할인", "indicator": "premium_rate", "operator": "<", "value": -0.5, "logic": "AND"},
+        {"name": "거래대금 충분", "indicator": "volume_ratio", "operator": ">", "value": 0.8, "logic": "AND"},
+        {"name": "RSI 저점", "indicator": "RSI", "operator": "<", "value": 40, "logic": "OR"}
+      ],
+      "sell": [
+        {"name": "괴리율 프리미엄", "indicator": "premium_rate", "operator": ">", "value": 0.5},
+        {"name": "RSI 반등", "indicator": "RSI", "operator": ">", "value": 60}
+      ]
+    }
+  ]
+}

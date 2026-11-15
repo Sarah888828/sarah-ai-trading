@@ -77,10 +77,12 @@ def load_strategies():
     _load_json_bundle(os.path.join(os.path.dirname(__file__), "backtest", "strategies_ysn.json"), strategies)
     # strategies_stockeasy.json (StockEasy 1~4호)
     _load_json_bundle(os.path.join(os.path.dirname(__file__), "backtest", "strategies_stockeasy.json"), strategies)
+    # strategies_kospd.json (KOSPD ETF 전략)
+    _load_json_bundle(os.path.join(os.path.dirname(__file__), "backtest", "strategies_kospd.json"), strategies)
 
     # 개별 json 파일들
     btd = os.path.join(os.path.dirname(__file__), "backtest")
-    excluded = {"sample_strategy.json", "strategies_ysn.json", "strategies_stockeasy.json"}
+    excluded = {"sample_strategy.json", "strategies_ysn.json", "strategies_stockeasy.json", "strategies_kospd.json"}
     for f in os.listdir(btd):
         if f.endswith(".json") and f not in excluded:
             with open(os.path.join(btd, f), "r", encoding="utf-8") as fp:
