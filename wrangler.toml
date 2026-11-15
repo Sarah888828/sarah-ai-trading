@@ -14,3 +14,12 @@ crons = ["0 3 * * *"]
 
 [vars]
 ENVIRONMENT = "production"
+
+# Durable Objects (24/7 백테스팅 엔진 + 상태 캐싱)
+[[durable_objects.bindings]]
+name = "TRADING_DO"
+class_name = "TradingDO"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["TradingDO"]
