@@ -8,6 +8,6 @@ export async function handleApiLogs(request, env, ctx) {
   ];
   
   return new Response(JSON.stringify({ logs }), {
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' },
   });
 }

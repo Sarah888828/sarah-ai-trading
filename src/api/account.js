@@ -19,6 +19,6 @@ export async function handleApiAccount(request, env, ctx) {
     available: 10000000 - invested,
     total_profit_rate: invested > 0 ? ((10000000 - invested) / invested * 100) : 0,
   }), {
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' },
   });
 }

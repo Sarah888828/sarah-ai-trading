@@ -9,6 +9,6 @@ export async function handleApiStatus(request, env, ctx) {
     server_time: now.toISOString().replace('T', ' ').substring(0, 19),
     market_open: marketOpen,
   }), {
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' },
   });
 }
