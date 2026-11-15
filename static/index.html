@@ -2,13 +2,14 @@
 <html lang="ko"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sarah.ai Dashboard</title><style>
 :root{color-scheme:dark;--bg:#0a0a0f;--line:#ffffff18;--muted:#85899e;--text:#f2f3fa;--cyan:#53e0d1;--rose:#fb7185}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 75% -10%,#6042aa35,transparent 38%),var(--bg);color:var(--text);font-family:Inter,system-ui,sans-serif}.shell{max-width:1440px;margin:auto;padding:0 36px}.topbar{height:78px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line)}.brand{font-size:20px;font-weight:750}.brand-name{color:#a993ff}.mark{display:inline-grid;place-items:center;width:33px;height:33px;border-radius:10px;background:linear-gradient(145deg,#a88bff,#6a4ce0);margin-right:8px}.nav{display:flex;gap:5px}.nav-link{color:#989caf;text-decoration:none;padding:10px 13px;border-radius:9px;font-size:13px;white-space:nowrap}.nav-link.active,.nav-link:hover{color:white;background:#9175ff24}.user{font-size:11px;color:#b8bbca;border:1px solid var(--line);padding:8px 11px;border-radius:20px}.dot{color:var(--cyan);margin-right:6px}.main{padding:34px 0 52px}.page{display:none}.page.active{display:block}.heading{display:flex;justify-content:space-between;align-items:end;margin-bottom:24px}.eyebrow{color:#a18aff;text-transform:uppercase;letter-spacing:1.5px;font-size:10px;font-weight:bold;margin-bottom:9px}h1{font-size:29px;margin:0;letter-spacing:-1px}h2{font-size:15px;margin:0}.sub{font-size:13px;color:var(--muted);margin:8px 0 0}.card{background:linear-gradient(145deg,#191a28e8,#10111bdc);border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 34px #0002;backdrop-filter:blur(12px)}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:17px}.metric{padding:19px;min-height:128px}.label{color:#a0a3b4;font-size:12px}.value{font-size:23px;font-weight:650;margin-top:21px}.hint{font-size:11px;color:#777c90;margin-top:5px}.positive{color:var(--cyan)}.negative{color:var(--rose)}.grid{display:grid;grid-template-columns:1.5fr 1fr;gap:14px}.panel{padding:20px}.panel-head{display:flex;justify-content:space-between;margin-bottom:18px}.muted{font-size:11px;color:var(--muted)}.chart{height:205px;position:relative;background:repeating-linear-gradient(to bottom,transparent 0,transparent 50px,#ffffff0c 51px,transparent 52px)}.chart svg{width:100%;height:100%}.labels{display:flex;justify-content:space-between;color:#73778b;font-size:10px}.allocation{display:flex;align-items:center;gap:18px}.donut{width:116px;height:116px;flex:none;border-radius:50%;background:conic-gradient(#9879ff 0 42%,#56d8cf 42% 69%,#5e72ce 69% 86%,#bd75d7 86%);position:relative}.donut:after{content:"";position:absolute;inset:16px;border-radius:50%;background:#171824}.center{position:absolute;inset:0;z-index:1;display:grid;place-content:center;text-align:center;font-size:10px;color:#aaa}.center strong{font-size:15px;color:white}.legend{flex:1;display:grid;gap:12px;font-size:11px;color:#a8aabc}.legend div{display:flex;justify-content:space-between}.tables{display:grid;gap:16px}.table-card{overflow:hidden}.table-wrap{overflow:auto}table{width:100%;min-width:630px;border-collapse:collapse}th{text-align:left;color:#888da2;font-size:10px;text-transform:uppercase;padding:12px 14px;border-bottom:1px solid var(--line)}td{padding:14px;border-bottom:1px solid #ffffff0c;font-size:12px;color:#d4d5e0;white-space:nowrap}tbody tr:last-child td{border:0}.table-title{padding:18px 18px 0}.table-title p{font-size:11px;color:var(--muted);margin:6px 0 13px}.strategies{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.strategy{padding:19px}.strategy h3{font-size:15px;margin:12px 0}.strategy p{font-size:12px;color:#999daf;line-height:1.6}.tag{font-size:10px;color:#b9a7ff;background:#9175ff20;border-radius:6px;padding:5px 8px}.logs{padding:8px 18px}.logs p{font:11px ui-monospace,Consolas,monospace;color:#afb2c2;border-bottom:1px solid #ffffff10;padding:11px 0;margin:0}.error{color:var(--rose);font-size:12px;min-height:16px}.footer{border-top:1px solid var(--line);padding:17px 0 22px;display:flex;justify-content:space-between;color:#666a7e;font-size:10px}@media(max-width:900px){.shell{padding:0 22px}.user{display:none}.metrics{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.strategies{grid-template-columns:repeat(2,1fr)}}@media(max-width:600px){.shell{padding:0 14px}.topbar{height:auto;padding:15px 0;align-items:flex-start;gap:12px;flex-direction:column}.nav{width:100%;overflow:auto}.nav-link{padding:9px 10px;font-size:11px}.main{padding-top:24px}.heading{align-items:flex-start;flex-direction:column;gap:12px}h1{font-size:25px}.metrics{gap:9px}.metric{padding:14px;min-height:116px}.value{font-size:18px}.strategies{grid-template-columns:1fr}.footer{gap:8px;flex-direction:column}}
 </style><style>.error{display:none;margin:12px 0;padding:12px 14px;border:1px solid #fb718566;background:#fb718511;color:#ff9aa8;border-radius:10px;font-size:13px}.error.visible{display:block}.loading{font-size:12px;color:#85899e;margin:8px 0 14px}.chart-empty{display:grid;place-items:center;min-height:180px;color:#85899e;font-size:13px}.position-bar{margin:13px 0}.position-bar-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;font-size:12px}.position-bar-track{height:8px;background:#ffffff12;border-radius:8px;overflow:hidden}.position-bar-track span{display:block;height:100%;border-radius:8px;transition:width .4s ease}</style></head><body><div class="shell">
-<header class="topbar"><div class="brand"><span class="mark">↗</span>Sarah<span class="brand-name">.ai</span></div><nav class="nav" aria-label="Main navigation"><a class="nav-link active" href="#summary" data-page="summary" data-tab="summary">AI Summary</a><a class="nav-link" href="#portfolio" data-page="portfolio" data-tab="portfolio">Portfolio</a><a class="nav-link" href="#strategies" data-page="strategies" data-tab="strategies">Strategies</a><a class="nav-link" href="#backtest" data-page="backtest" data-tab="backtest">Backtest</a><a class="nav-link" href="#settings" data-page="settings" data-tab="settings">Settings</a></nav><div class="user"><i class="dot">●</i><span id="market-status">Checking market</span></div></header>
+<header class="topbar"><div class="brand"><span class="mark">↗</span>Sarah<span class="brand-name">.ai</span></div><nav class="nav" aria-label="Main navigation"><a class="nav-link active" href="#summary" data-page="summary" data-tab="summary">AI Summary</a><a class="nav-link" href="#portfolio" data-page="portfolio" data-tab="portfolio">Portfolio</a><a class="nav-link" href="#strategies" data-page="strategies" data-tab="strategies">Strategies</a><a class="nav-link" href="#backtest" data-page="backtest" data-tab="backtest">Backtest</a><a class="nav-link" href="#sectors" data-page="sectors" data-tab="sectors">섹터 분석</a><a class="nav-link" href="#settings" data-page="settings" data-tab="settings">Settings</a></nav><div class="user"><i class="dot">●</i><span id="market-status">Checking market</span></div></header>
 <main class="main"><p class="error" id="error" role="alert"></p><div id="loading-status" class="loading" aria-live="polite">Workers API 연결 확인 중…</div>
 <section class="page active" id="summary" style="display:block"><div class="heading"><div><div class="eyebrow">Trading overview</div><h1>AI Summary</h1><p class="sub">A clear view of your portfolio performance.</p></div></div><div class="metrics"><article class="card metric"><div class="label">Total balance</div><div class="value" id="total-balance">—</div><div class="hint">Account valuation</div></article><article class="card metric"><div class="label">Invested</div><div class="value" id="invested">—</div><div class="hint">Currently in positions</div></article><article class="card metric"><div class="label">Available</div><div class="value" id="available">—</div><div class="hint">Ready to invest</div></article><article class="card metric"><div class="label">Profit rate</div><div class="value positive" id="profit-rate">—</div><div class="hint">Total portfolio return</div></article></div>
   <div class="grid"><article class="card panel"><div class="panel-head"><h2>Portfolio performance</h2><span class="muted" id="chart-caption">실제 보유종목 수익률</span></div><div class="chart" id="portfolio-chart"><div class="chart-empty">포트폴리오 데이터를 불러오는 중…</div></div><div class="labels"><span>보유 종목별 손익</span><span id="chart-count"></span></div></article><article class="card panel"><div class="panel-head"><h2>Asset allocation</h2><span class="muted">By position</span></div><div class="allocation"><div class="donut" id="allocation-donut"><div class="center"><strong id="allocation-count">—</strong>종목</div></div><div class="legend" id="allocation-legend"><div><span>보유 종목 데이터를 불러오는 중…</span></div></div></div></article></div></section>
 <section class="page" id="portfolio"><div class="heading"><div><div class="eyebrow">Holdings and activity</div><h1>Portfolio</h1><p class="sub">Review your open positions and recent trades.</p></div></div><div class="tables"><article class="card table-card"><div class="table-title"><h2>Open positions</h2><p>Your current holdings</p></div><div class="table-wrap"><table><thead><tr><th>Asset</th><th>Buy price</th><th>Quantity</th><th>Invested</th><th>Current price</th><th>Profit rate</th></tr></thead><tbody id="positions-table"><tr><td colspan="6">Loading positions...</td></tr></tbody></table></div></article><article class="card table-card"><div class="table-title"><h2>Recent trades</h2><p>Your latest transactions</p></div><div class="table-wrap"><table><thead><tr><th>Type</th><th>Asset</th><th>Price</th><th>Quantity</th><th>Amount</th><th>Profit rate</th></tr></thead><tbody id="trades-table"><tr><td colspan="6">Loading trades...</td></tr></tbody></table></div></article></div></section>
 <section class="page" id="strategies"><div class="heading"><div><div class="eyebrow">AI-powered investing</div><h1>Strategies</h1><p class="sub">Explore available strategies.</p></div></div><div class="strategies" id="strategy-list"><p>Loading strategies...</p></div></section>
 <section class="page" id="backtest"><div class="heading"><div><div class="eyebrow">Historical performance</div><h1>Backtest</h1><p class="sub">Compare strategy results on historical market data.</p></div></div><article class="card table-card"><div class="table-title"><h2>Strategy results</h2><p>Performance summary across strategies</p></div><div class="table-wrap"><table><thead><tr><th>Strategy</th><th>Total return</th><th>Win rate</th><th>Max drawdown</th><th>Total trades</th></tr></thead><tbody id="backtest-table"><tr><td colspan="5">Loading results...</td></tr></tbody></table></div></article></section>
+<section class="page" id="sectors"><div class="heading"><div><div class="eyebrow">Market research</div><h1>한국·미국·중국 섹터 분석</h1><p class="sub">D1 가격 이력 기반 분석입니다. 데이터가 부족하면 추천하지 않습니다.</p></div></div><div class="sector-controls"><button class="sector-market active" data-market="KR">한국</button><button class="sector-market" data-market="US">미국</button><button class="sector-market" data-market="CN">중국</button><span id="sector-asof" class="sub"></span></div><p id="sector-notice" class="sub" role="status">분석 데이터를 불러오는 중…</p><div class="table-wrap"><table><thead><tr><th>섹터</th><th>종목 수</th><th>평균 등락</th><th>상승/하락</th><th>거래량 배율</th><th>분석 제안</th></tr></thead><tbody id="sector-body"><tr><td colspan="6">로딩 중…</td></tr></tbody></table></div><p class="sub">투자 참고 정보일 뿐 매매 지시나 수익 보장이 아닙니다.</p></section>
 <section class="page" id="settings"><div class="heading"><div><div class="eyebrow">System activity</div><h1>Settings</h1><p class="sub">Recent system logs and account activity.</p></div></div><article class="card"><div class="table-title"><h2>Activity logs</h2><p>Latest events from Sarah.ai</p></div><div class="logs" id="logs-list"><p>Loading logs...</p></div></article></section>
 </main><footer class="footer"><span>Sarah.ai Trading Dashboard</span><span>Market insights, made clear.</span></footer></div>
 <script>
@@ -34,6 +35,7 @@
     if (page === 'portfolio') loadPortfolio();
     if (page === 'strategies') loadStrategies();
     if (page === 'backtest') loadBacktest();
+    if (page === 'sectors') loadSectors('KR');
     if (page === 'settings') loadLogs();
   }
   function getJSON(path) {
@@ -82,6 +84,30 @@
       }).join('') || '<tr><td colspan="5">No backtest results</td></tr>';
     }).catch(showError);
   }
+  function loadSectors(market) {
+    var body = document.getElementById('sector-body');
+    var notice = document.getElementById('sector-notice');
+    if (body) body.innerHTML = '<tr><td colspan="6">섹터 데이터를 조회 중…</td></tr>';
+    getJSON('/api/sector-analysis?market=' + encodeURIComponent(market)).then(function(data) {
+      var rows = data.sectors || [];
+      var asof = document.getElementById('sector-asof');
+      if (asof) asof.textContent = rows.length && rows[0].as_of ? '기준일: ' + rows[0].as_of : '';
+      if (!rows.length) {
+        if (notice) notice.textContent = market + ' 시장의 섹터별 가격 이력이 D1에 없어 아직 분석할 수 없습니다.';
+        if (body) body.innerHTML = '<tr><td colspan="6">가격 이력이 쌓이면 섹터별 성과와 분석 제안이 표시됩니다. 임의 데이터를 추천에 사용하지 않습니다.</td></tr>';
+        return;
+      }
+      if (notice) notice.textContent = data.note || '가격 이력 기반 참고 분석입니다.';
+      if (body) body.innerHTML = rows.map(function(row) {
+        var pct = Number(row.avg_return_pct || 0);
+        var rec = row.recommendation || {};
+        return '<tr><td>' + esc(row.sector) + '</td><td>' + Number(row.stocks || 0) + '</td><td class="' + (pct >= 0 ? 'positive' : 'negative') + '">' + (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%</td><td>' + Number(row.advancing || 0) + ' / ' + Number(row.declining || 0) + '</td><td>' + Number(row.avg_volume_ratio || 0).toFixed(2) + 'x</td><td><strong>' + esc(rec.label || '중립 관찰') + '</strong><br><small>' + esc(rec.rationale || '') + '</small></td></tr>';
+      }).join('');
+    }).catch(function(err) {
+      if (notice) notice.textContent = '섹터 분석 API 오류: ' + err.message;
+      if (body) body.innerHTML = '<tr><td colspan="6">분석 요청에 실패했습니다.</td></tr>';
+    });
+  }
   function loadLogs() {
     getJSON('/api/logs').then(function(data) {
       document.getElementById('logs-list').innerHTML = (data.logs || []).map(function(l) {
@@ -99,6 +125,7 @@
     if (el) { el.textContent = 'API 연결 오류: ' + (e && e.message ? e.message : '응답을 처리하지 못했습니다.'); el.classList.add('visible'); }
     var status = document.getElementById('loading-status');
     if (status) status.textContent = '데이터를 가져오지 못했습니다. 새로고침하거나 잠시 후 다시 시도해 주세요.';
+  }
   function renderPortfolioChart(positions) {
     var chart = document.getElementById('portfolio-chart');
     var legend = document.getElementById('allocation-legend');
@@ -131,12 +158,18 @@
     if (count) count.textContent = String(positions.length);
     if (chartCount) chartCount.textContent = positions.length + ' positions';
   }
-  }
   document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.nav-link').forEach(function(el) {
       el.addEventListener('click', function(e) {
         e.preventDefault();
         showPage(this.getAttribute('data-page'));
+      });
+    });
+    document.querySelectorAll('.sector-market').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.sector-market').forEach(function(item) { item.classList.remove('active'); });
+        this.classList.add('active');
+        loadSectors(this.getAttribute('data-market'));
       });
     });
     window.addEventListener('hashchange', function() {

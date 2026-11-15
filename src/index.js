@@ -5,6 +5,7 @@ import { handleApiTrades, handleApiTradesPost } from './api/trades.js';
 import { handleApiStrategies } from './api/strategies.js';
 import { handleApiBacktestRun, handleApiBacktestRunAll, handleApiBacktestStrategies } from './api/backtest.js';
 import { handleApiLogs } from './api/logs.js';
+import { handleApiSectorAnalysis } from './api/sector-analysis.js';
 import { handleCronBacktest } from './cron/backtest.js';
 
 export default {
@@ -23,6 +24,7 @@ export default {
     if (path === '/api/trades' && method === 'GET') return handleApiTrades();
     if (path === '/api/trades' && method === 'POST') return handleApiTradesPost(request);
     if (path === '/api/strategies' && method === 'GET') return handleApiStrategies();
+    if (path === '/api/sector-analysis' && method === 'GET') return handleApiSectorAnalysis(request, env);
     if (path === '/api/backtest/run' && method === 'GET') return handleApiBacktestRun(request);
     if (path === '/api/backtest/run_all' && method === 'GET') return handleApiBacktestRunAll();
     if (path === '/api/backtest/strategies' && method === 'GET') return handleApiBacktestStrategies();
