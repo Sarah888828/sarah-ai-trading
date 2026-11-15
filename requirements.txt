@@ -1,0 +1,6 @@
+pykiwoom>=0.0.8
+pandas>=2.0.0
+numpy>=1.24.0
+schedule>=1.2.0
+sqlalchemy>=2.0.0
+python-dateutil>=2.8.0

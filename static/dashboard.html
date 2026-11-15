@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>주식 자동매매 시스템</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d1117;color:#e6e6e6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:20px}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid #30363d}
+.header h1{font-size:24px;font-weight:700;background:linear-gradient(135deg,#58a6ff,#3fb950);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header .status{display:flex;align-items:center;gap:8px;font-size:14px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.dot.green{background:#3fb950;box-shadow:0 0 8px #3fb95088}
+.dot.red{background:#f85149;box-shadow:0 0 8px #f8514988}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:24px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:20px}
+.card .label{font-size:12px;color:#8b949e;margin-bottom:6px}
+.card .value{font-size:28px;font-weight:700}
+.card .value.green{color:#3fb950}
+.card .value.red{color:#f85149}
+.card .value.blue{color:#58a6ff}
+.section{margin-bottom:24px}
+.section h2{font-size:16px;font-weight:600;margin-bottom:12px;color:#f0f0f0}
+table{width:100%;border-collapse:collapse;background:#161b22;border:1px solid #30363d;border-radius:8px;overflow:hidden}
+th{background:#21262d;padding:12px 16px;text-align:left;font-size:12px;color:#8b949e;font-weight:600}
+td{padding:12px 16px;border-top:1px solid #21262d;font-size:14px}
+tr:hover{background:#1c2333}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
+.badge.buy{background:#3fb95022;color:#3fb950}
+.badge.sell{background:#f8514922;color:#f85149}
+.profit-up{color:#3fb950}
+.profit-down{color:#f85149}
+.logs{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:16px;max-height:300px;overflow-y:auto;font-family:'Courier New',monospace;font-size:12px;line-height:1.6}
+.logs .log-line{color:#8b949e}
+.logs .log-line .time{color:#484f58}
+.refresh{text-align:right;margin-bottom:8px;font-size:12px;color:#8b949e}
+@media(max-width:600px){
+  .grid{grid-template-columns:1fr 1fr}
+  .header{flex-direction:column;gap:12px;align-items:start}
+}
+</style>
+</head>
+<div class="header">
+  <h1>📈 주식 자동매매 시스템</h1>
+  <div class="status"><span id="statusDot" class="dot green"></span><span id="statusText">실행 중</span><span id="marketStatus" style="color:#8b949e;font-size:12px;margin-left:8px"></span></div>
+</div>
+
+<div class="grid">
+  <div class="card"><div class="label">총 자산</div><div class="value blue" id="totalBalance">-</div></div>
+  <div class="card"><div class="label">투자 금액</div><div class="value" id="invested">-</div></div>
+  <div class="card"><div class="label">예수금</div><div class="value" id="available">-</div></div>
+  <div class="card"><div class="label">총 수익률</div><div class="value" id="profitRate">-</div></div>
+</div>
+
+<div class="section">
+  <h2>📋 보유 포지션</h2>
+  <table><thead><tr><th>종목</th><th>매수가</th><th>수량</th><th>투자금액</th><th>현재가</th><th>수익률</th><th>매수일</th></tr></thead><tbody id="positionsBody"></tbody></table>
+</div>
+
+<div class="section">
+  <h2>🔄 최근 매매 내역</h2>
+  <table><thead><tr><th>구분</th><th>종목</th><th>가격</th><th>수량</th><th>금액</th><th>수익률</th><th>일시</th></tr></thead><tbody id="tradesBody"></tbody></table>
+</div>
+
+<div class="section">
+  <h2>⚙️ 활성 전략</h2>
+  <table><thead><tr><th>전략명</th><th>설명</th><th>파라미터</th><th>상태</th></tr></thead><tbody id="strategiesBody"></tbody></table>
+</div>
+
+<div class="section">
+  <h2>📜 시스템 로그</h2>
+  <div class="refresh" id="refreshInfo">자동 갱신 중 (5초 간격)</div>
+  <div class="logs" id="logsContainer"></div>
+</div>
+
+<script>
+async function fetchJSON(url){const r=await fetch(url);return r.json()}
+function fmt(n){return Number(n).toLocaleString()}
+function fmtRate(n){const v=Number(n);return v>0?`+${v.toFixed(2)}%`:v<0?`${v.toFixed(2)}%`:'0.00%'}
+
+async function loadDashboard(){
+  try{
+    const[status,account,positions,trades,strategies,logs]=await Promise.all([
+      fetchJSON('/api/status'),fetchJSON('/api/account'),fetchJSON('/api/positions'),
+      fetchJSON('/api/trades'),fetchJSON('/api/strategies'),fetchJSON('/api/logs')
+    ]);
+    document.getElementById('statusText').textContent=status.status==='running'?'실행 중':'중지';
+    document.getElementById('statusDot').className=`dot ${status.status==='running'?'green':'red'}`;
+    document.getElementById('marketStatus').textContent=status.market_open?'● 장중':'○ 장외';
+    document.getElementById('totalBalance').textContent=fmt(account.total_balance)+'원';
+    document.getElementById('invested').textContent=fmt(account.invested)+'원';
+    document.getElementById('available').textContent=fmt(account.available)+'원';
+    const pr=document.getElementById('profitRate');
+    pr.textContent=fmtRate(account.total_profit_rate);
+    pr.className=`value ${Number(account.total_profit_rate)>=0?'green':'red'}`;
+    const pb=document.getElementById('positionsBody');
+    pb.innerHTML=positions.positions.map(p=>`<tr><td>${p.stock_name}<br><small style="color:#8b949e">${p.stock_code}</small></td><td>${fmt(p.buy_price)}</td><td>${p.quantity}</td><td>${fmt(p.invested)}</td><td>${fmt(p.current_price)}</td><td class="${Number(p.profit_rate)>=0?'profit-up':'profit-down'}">${fmtRate(p.profit_rate)}</td><td>${p.buy_date}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:#8b949e">보유 종목 없음</td></tr>';
+    const tb=document.getElementById('tradesBody');
+    tb.innerHTML=trades.trades.map(t=>`<tr><td><span class="badge ${t.type}">${t.type==='buy'?'매수':'매도'}</span></td><td>${t.stock_name}<br><small style="color:#8b949e">${t.stock_code}</small></td><td>${fmt(t.price)}</td><td>${t.quantity}</td><td>${fmt(t.amount)}</td><td>${t.profit_rate!=null?`<span class="${t.profit_rate>=0?'profit-up':'profit-down'}">${fmtRate(t.profit_rate)}</span>`:'-'}</td><td>${t.date}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:#8b949e">매매 내역 없음</td></tr>';
+    const sb=document.getElementById('strategiesBody');
+    sb.innerHTML=strategies.strategies.map(s=>`<tr><td>${s.name}</td><td style="color:#8b949e">${s.description}</td><td style="font-size:12px;color:#8b949e">${JSON.stringify(s.params)}</td><td><span style="color:${s.enabled?'#3fb950':'#8b949e'}">${s.enabled?'활성':'비활성'}</span></td></tr>`).join('');
+    const lc=document.getElementById('logsContainer');
+    lc.innerHTML=logs.logs.map(l=>`<div class="log-line"><span class="time">[${l.time}]</span> ${l.message}</div>`).join('');
+    document.getElementById('refreshInfo').textContent=`마지막 갱신: ${new Date().toLocaleTimeString()}`;
+  }catch(e){document.getElementById('refreshInfo').textContent='데이터 로딩 중...'}
+}
+loadDashboard();
+setInterval(loadDashboard,5000);
+</script>
+</body>
+</html>
+<body>

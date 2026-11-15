@@ -1,0 +1,8 @@
+# Git에 올리면 안 되는 파일들
+config.py
+*.db
+logs/
+__pycache__/
+venv/
+.env
+*.pyc
