@@ -73,25 +73,32 @@ def load_strategies():
         with open(sample_path, "r", encoding="utf-8") as f:
             strategies.append(json.load(f))
 
-    # strategies_ysn.json
-    ysn_path = os.path.join(os.path.dirname(__file__), "backtest", "strategies_ysn.json")
-    if os.path.exists(ysn_path):
-        with open(ysn_path, "r", encoding="utf-8") as f:
-            ysn_data = json.load(f)
-            if "strategies" in ysn_data:
-                strategies.extend(ysn_data["strategies"])
-            else:
-                strategies.append(ysn_data)
+    # strategies_ysn.json (Momentum, Reversal, Trend, Scalping, Breakout)
+    _load_json_bundle(os.path.join(os.path.dirname(__file__), "backtest", "strategies_ysn.json"), strategies)
+    # strategies_stockeasy.json (StockEasy 1~4호)
+    _load_json_bundle(os.path.join(os.path.dirname(__file__), "backtest", "strategies_stockeasy.json"), strategies)
 
     # 개별 json 파일들
     btd = os.path.join(os.path.dirname(__file__), "backtest")
+    excluded = {"sample_strategy.json", "strategies_ysn.json", "strategies_stockeasy.json"}
     for f in os.listdir(btd):
-        if f.endswith(".json") and f not in ("sample_strategy.json", "strategies_ysn.json"):
+        if f.endswith(".json") and f not in excluded:
             with open(os.path.join(btd, f), "r", encoding="utf-8") as fp:
                 s = json.load(fp)
                 if "strategies" not in s and "name" in s:
                     strategies.append(s)
     return strategies
+
+
+def _load_json_bundle(path, strategies):
+    if not os.path.exists(path):
+        return
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+        if "strategies" in data:
+            strategies.extend(data["strategies"])
+        elif "name" in data:
+            strategies.append(data)
 
 def print_result(result, title="백테스팅 결과"):
     s = result.to_dict()["summary"]

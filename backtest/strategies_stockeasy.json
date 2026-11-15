@@ -1,0 +1,92 @@
+{
+  "strategies": [
+    {
+      "name": "StockEasy 1호 - 모멘텀 Easy",
+      "description": "스탁이지 AI 기반 모멘텀 전략. 단기 추세 추종 + 거래량 증가 + 강한 상승 모멘텀 포착",
+      "category": "Momentum",
+      "position_size": 0.2,
+      "max_positions": 5,
+      "stop_loss": -0.035,
+      "take_profit": 0.08,
+      "trailing_stop": 0.025,
+      "buy": [
+        {"name": "모멘텀 상승", "indicator": "momentum_5d", "operator": ">", "value": 3, "logic": "AND"},
+        {"name": "거래량 증가", "indicator": "volume_ratio", "operator": ">", "value": 1.5, "logic": "AND"},
+        {"name": "단기추세 상승", "indicator": "ma_5", "operator": ">", "value": "ma_20", "logic": "AND"},
+        {"name": "RSI 중립~강세", "indicator": "RSI", "operator": ">", "value": 50, "logic": "AND"},
+        {"name": "RSI 과매수 제외", "indicator": "RSI", "operator": "<", "value": 75, "logic": "AND"}
+      ],
+      "sell": [
+        {"name": "모멘텀 소멸", "indicator": "momentum_5d", "operator": "<", "value": 0},
+        {"name": "RSI 과매수", "indicator": "RSI", "operator": ">", "value": 78},
+        {"name": "데드크로스", "indicator": "ma_5", "operator": "cross_below", "value": "ma_20"},
+        {"name": "거래량 급감", "indicator": "volume_ratio", "operator": "<", "value": 0.6}
+      ]
+    },
+    {
+      "name": "StockEasy 2호 - 피크 Easy",
+      "description": "스탁이지 AI 피크 전략. 고점 돌파 후 추가 상승 구간 포착, 변동성 돌파 기반",
+      "category": "Breakout",
+      "position_size": 0.2,
+      "max_positions": 4,
+      "stop_loss": -0.04,
+      "take_profit": 0.1,
+      "trailing_stop": 0.03,
+      "buy": [
+        {"name": "신고가 돌파", "indicator": "close", "operator": ">", "value": "high_20d", "logic": "AND"},
+        {"name": "거래량 폭발", "indicator": "volume_ratio", "operator": ">", "value": 2.0, "logic": "AND"},
+        {"name": "RSI 강세", "indicator": "RSI", "operator": ">", "value": 60, "logic": "AND"},
+        {"name": "추세 상승", "indicator": "ma_5", "operator": ">", "value": "ma_20", "logic": "AND"},
+        {"name": "볼린저 상단 근접", "indicator": "close", "operator": ">", "value": "bollinger_mid", "logic": "AND"}
+      ],
+      "sell": [
+        {"name": "RSI 극단 과매수", "indicator": "RSI", "operator": ">", "value": 82},
+        {"name": "거래량 급감", "indicator": "volume_ratio", "operator": "<", "value": 0.4},
+        {"name": "고점 하향 돌파", "indicator": "close", "operator": "cross_below", "value": "ma_5"},
+        {"name": "볼린저 중앙 하향", "indicator": "close", "operator": "cross_below", "value": "bollinger_mid"}
+      ]
+    },
+    {
+      "name": "StockEasy 3호 - 밸류 Easy",
+      "description": "스탁이지 AI 가치 투자 전략. 저평가 종목 발굴 + 장기 보유, 우량주 중심",
+      "category": "Value",
+      "position_size": 0.25,
+      "max_positions": 3,
+      "stop_loss": -0.06,
+      "take_profit": 0.15,
+      "buy": [
+        {"name": "RSI 저점", "indicator": "RSI", "operator": "<", "value": 40, "logic": "AND"},
+        {"name": "볼린저 하단 근접", "indicator": "close", "operator": "<=", "value": "bollinger_lower", "logic": "OR"},
+        {"name": "거래량 확인", "indicator": "volume_ratio", "operator": ">", "value": 1.0, "logic": "AND"},
+        {"name": "MACD 반전 신호", "indicator": "MACD", "operator": ">", "value": "macd_signal", "logic": "AND"}
+      ],
+      "sell": [
+        {"name": "목표가 도달", "indicator": "profit_rate", "operator": ">=", "value": 15},
+        {"name": "볼린저 상단 도달", "indicator": "close", "operator": ">=", "value": "bollinger_upper"},
+        {"name": "RSI 과매수", "indicator": "RSI", "operator": ">", "value": 70},
+        {"name": "MACD 약화", "indicator": "MACD", "operator": "cross_below", "value": "macd_signal"}
+      ]
+    },
+    {
+      "name": "StockEasy 4호 - 서프 Easy",
+      "description": "스탁이지 AI 서프라이즈 전략. 실적/이벤트 서프라이즈 발생 시 급등 구간 진입",
+      "category": "Surprise",
+      "position_size": 0.15,
+      "max_positions": 5,
+      "stop_loss": -0.03,
+      "take_profit": 0.07,
+      "buy": [
+        {"name": "거래량 폭발", "indicator": "volume_ratio", "operator": ">", "value": 3.0, "logic": "AND"},
+        {"name": "RSI 강함", "indicator": "RSI", "operator": ">", "value": 55, "logic": "AND"},
+        {"name": "추세 돌파", "indicator": "close", "operator": ">", "value": "bollinger_upper", "logic": "OR"},
+        {"name": "모멘텀 강함", "indicator": "momentum_5d", "operator": ">", "value": 4, "logic": "OR"}
+      ],
+      "sell": [
+        {"name": "RSI 하락 전환", "indicator": "RSI", "operator": "<", "value": "rsi_prev"},
+        {"name": "거래량 급감", "indicator": "volume_ratio", "operator": "<", "value": 0.5},
+        {"name": "단기추세 이탈", "indicator": "close", "operator": "cross_below", "value": "ma_5"},
+        {"name": "목표 수익", "indicator": "profit_rate", "operator": ">=", "value": 7}
+      ]
+    }
+  ]
+}
