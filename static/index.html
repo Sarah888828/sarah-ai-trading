@@ -4,7 +4,7 @@
 </style><style>.error{display:none;margin:12px 0;padding:12px 14px;border:1px solid #fb718566;background:#fb718511;color:#ff9aa8;border-radius:10px;font-size:13px}.error.visible{display:block}.loading{font-size:12px;color:#85899e;margin:8px 0 14px}.chart-empty{display:grid;place-items:center;min-height:180px;color:#85899e;font-size:13px}.position-bar{margin:13px 0}.position-bar-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;font-size:12px}.position-bar-track{height:8px;background:#ffffff12;border-radius:8px;overflow:hidden}.position-bar-track span{display:block;height:100%;border-radius:8px;transition:width .4s ease}</style></head><body><div class="shell">
 <header class="topbar"><div class="brand"><span class="mark">↗</span>Sarah<span class="brand-name">.ai</span></div><nav class="nav" aria-label="Main navigation"><a class="nav-link active" href="#summary" data-page="summary" data-tab="summary">AI Summary</a><a class="nav-link" href="#portfolio" data-page="portfolio" data-tab="portfolio">Portfolio</a><a class="nav-link" href="#strategies" data-page="strategies" data-tab="strategies">Strategies</a><a class="nav-link" href="#backtest" data-page="backtest" data-tab="backtest">Backtest</a><a class="nav-link" href="#sectors" data-page="sectors" data-tab="sectors">섹터 분석</a><a class="nav-link" href="#settings" data-page="settings" data-tab="settings">Settings</a></nav><div class="user"><i class="dot">●</i><span id="market-status">Checking market</span></div></header>
 <main class="main"><p class="error" id="error" role="alert"></p><div id="loading-status" class="loading" aria-live="polite">Workers API 연결 확인 중…</div>
-<section class="page active" id="summary" style="display:block"><div class="heading"><div><div class="eyebrow">Trading overview</div><h1>AI Summary</h1><p class="sub">A clear view of your portfolio performance.</p></div></div><div class="metrics"><article class="card metric"><div class="label">Total balance</div><div class="value" id="total-balance">—</div><div class="hint">Account valuation</div></article><article class="card metric"><div class="label">Invested</div><div class="value" id="invested">—</div><div class="hint">Currently in positions</div></article><article class="card metric"><div class="label">Available</div><div class="value" id="available">—</div><div class="hint">Ready to invest</div></article><article class="card metric"><div class="label">Profit rate</div><div class="value positive" id="profit-rate">—</div><div class="hint">Total portfolio return</div></article></div>
+<section class="page active" id="summary" style="display:block"><div class="heading"><div><div class="eyebrow">Trading overview</div><h1>AI Summary</h1><p class="sub">A clear view of your portfolio performance.</p></div></div><div class="metrics"><article class="card metric"><div class="label">Starting capital</div><div class="value" id="total-balance">—</div><div class="hint">Model portfolio</div></article><article class="card metric"><div class="label">Invested</div><div class="value" id="invested">—</div><div class="hint">Currently in positions</div></article><article class="card metric"><div class="label">Available</div><div class="value" id="available">—</div><div class="hint">Starting capital less invested</div></article><article class="card metric"><div class="label">Profit rate</div><div class="value positive" id="profit-rate">—</div><div class="hint">Total portfolio return</div></article></div>
   <div class="grid"><article class="card panel"><div class="panel-head"><h2>Portfolio performance</h2><span class="muted" id="chart-caption">실제 보유종목 수익률</span></div><div class="chart" id="portfolio-chart"><div class="chart-empty">포트폴리오 데이터를 불러오는 중…</div></div><div class="labels"><span>보유 종목별 손익</span><span id="chart-count"></span></div></article><article class="card panel"><div class="panel-head"><h2>Asset allocation</h2><span class="muted">By position</span></div><div class="allocation"><div class="donut" id="allocation-donut"><div class="center"><strong id="allocation-count">—</strong>종목</div></div><div class="legend" id="allocation-legend"><div><span>보유 종목 데이터를 불러오는 중…</span></div></div></div></article></div></section>
 <section class="page" id="portfolio"><div class="heading"><div><div class="eyebrow">Holdings and activity</div><h1>Portfolio</h1><p class="sub">Review your open positions and recent trades.</p></div></div><div class="tables"><article class="card table-card"><div class="table-title"><h2>Open positions</h2><p>Your current holdings</p></div><div class="table-wrap"><table><thead><tr><th>Asset</th><th>Buy price</th><th>Quantity</th><th>Invested</th><th>Current price</th><th>Profit rate</th></tr></thead><tbody id="positions-table"><tr><td colspan="6">Loading positions...</td></tr></tbody></table></div></article><article class="card table-card"><div class="table-title"><h2>Recent trades</h2><p>Your latest transactions</p></div><div class="table-wrap"><table><thead><tr><th>Type</th><th>Asset</th><th>Price</th><th>Quantity</th><th>Amount</th><th>Profit rate</th></tr></thead><tbody id="trades-table"><tr><td colspan="6">Loading trades...</td></tr></tbody></table></div></article></div></section>
 <section class="page" id="strategies"><div class="heading"><div><div class="eyebrow">AI-powered investing</div><h1>Strategies</h1><p class="sub">Explore available strategies.</p></div></div><div class="strategies" id="strategy-list"><p>Loading strategies...</p></div></section>
@@ -15,10 +15,9 @@
 <script>
 (function() {
   'use strict';
-  var API_BASE = 'https://sarah-ai-v2.horizontal486.workers.dev';
   var currentPage = 'summary';
   function showPage(page) {
-    var pages = ['summary','portfolio','strategies','backtest','settings'];
+    var pages = ['summary','portfolio','strategies','backtest','sectors','settings'];
     if (pages.indexOf(page) === -1) page = 'summary';
     currentPage = page;
     document.querySelectorAll('.page').forEach(function(el) { el.style.display = 'none'; el.classList.remove('active'); });
@@ -39,7 +38,7 @@
     if (page === 'settings') loadLogs();
   }
   function getJSON(path) {
-    return fetch(API_BASE + path).then(function(r) {
+    return fetch(path).then(function(r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.json();
     });
@@ -51,8 +50,8 @@
       document.getElementById('total-balance').textContent = Number(a.total_balance).toLocaleString() + ' KRW';
       document.getElementById('invested').textContent = Number(a.invested).toLocaleString() + ' KRW';
       document.getElementById('available').textContent = Number(a.available).toLocaleString() + ' KRW';
-      var profit = Number(a.total_profit_rate || 0);
-      document.getElementById('profit-rate').textContent = (profit >= 0 ? '+' : '') + profit.toFixed(2) + '%';
+      var profit = a.total_profit_rate;
+      document.getElementById('profit-rate').textContent = profit == null ? '—' : (profit >= 0 ? '+' : '') + profit.toFixed(2) + '%';
       var status = document.getElementById('loading-status'); if (status) status.textContent = 'Workers API 데이터 연결됨 · ' + (s.server_time || '');
       getJSON('/api/positions').then(function(p) { renderPortfolioChart(p.positions || []); }).catch(showError);
     }).catch(showError);

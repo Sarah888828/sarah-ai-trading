@@ -8,7 +8,9 @@ function json(data, status = 200) {
 export async function handleApiPositions(request, env, ctx) {
   try {
     const { results } = await env.DB.prepare(
-      'SELECT stock_code, stock_name, buy_price, quantity, buy_date FROM positions ORDER BY buy_date DESC'
+      `SELECT p.stock_code, s.stock_name, p.buy_price, p.quantity, p.buy_date
+       FROM positions p LEFT JOIN stocks s ON s.stock_code = p.stock_code
+       ORDER BY p.buy_date DESC`
     ).all();
     const positions = (results || []).map(r => ({
       stock_code: r.stock_code,
@@ -21,26 +23,33 @@ export async function handleApiPositions(request, env, ctx) {
       buy_date: r.buy_date ? r.buy_date.substring(0, 10) : '',
     }));
     return json({ positions, count: positions.length });
-  } catch (e) {
-    // 샘플 데이터
-    const samples = [
-      { stock_code: '005930', stock_name: '삼성전자', buy_price: 72000, quantity: 10, invested: 720000, current_price: 73800, profit_rate: 2.5, buy_date: '2026-11-01' },
-      { stock_code: '000660', stock_name: 'SK하이닉스', buy_price: 185000, quantity: 5, invested: 925000, current_price: 192000, profit_rate: 3.78, buy_date: '2026-11-05' },
-      { stock_code: '035420', stock_name: 'NAVER', buy_price: 215000, quantity: 3, invested: 645000, current_price: 208000, profit_rate: -3.26, buy_date: '2026-11-08' },
-    ];
-    return json({ positions: samples, count: 3 });
+  } catch (error) {
+    console.error('Failed to read positions:', error);
+    return json({ error: 'Could not read positions' }, 500);
   }
 }
 
 export async function handleApiPositionsPost(request, env, ctx) {
   try {
-    const body = await request.json();
-    await env.DB.prepare(
-      'INSERT OR REPLACE INTO positions (stock_code, stock_name, buy_price, quantity) VALUES (?, ?, ?, ?)'
-    ).bind(body.stock_code, body.stock_name || null, body.buy_price, body.quantity).run();
+    const body = await request.json().catch(() => null);
+    if (!body?.stock_code) return json({ error: 'stock_code required' }, 400);
+    const position = env.DB.prepare(
+      `INSERT INTO positions (stock_code, buy_price, quantity, order_no) VALUES (?, ?, ?, ?)
+       ON CONFLICT(stock_code) DO UPDATE SET buy_price = excluded.buy_price,
+         quantity = excluded.quantity, order_no = excluded.order_no, updated_at = datetime('now')`
+    ).bind(body.stock_code, body.buy_price, body.quantity, body.order_no ?? null);
+    if (body.stock_name) {
+      const stock = env.DB.prepare(
+        'INSERT INTO stocks (stock_code, stock_name) VALUES (?, ?) ON CONFLICT(stock_code) DO NOTHING'
+      ).bind(body.stock_code, body.stock_name);
+      await env.DB.batch([stock, position]);
+    } else {
+      await position.run();
+    }
     return json({ accepted: true });
   } catch (e) {
-    return json({ error: e.message }, 500);
+    console.error('Failed to write positions:', e);
+    return json({ error: 'Could not write positions' }, 500);
   }
 }
 
@@ -51,6 +60,7 @@ export async function handleApiPositionsDelete(request, env, ctx) {
     await env.DB.prepare('DELETE FROM positions WHERE stock_code = ?').bind(code).run();
     return json({ accepted: true });
   } catch (e) {
-    return json({ error: e.message }, 500);
+    console.error('Failed to write positions:', e);
+    return json({ error: 'Could not write positions' }, 500);
   }
 }

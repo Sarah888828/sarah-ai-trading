@@ -1,24 +1,21 @@
-export async function handleApiAccount(request, env, ctx) {
-  // D1에서 포지션 조회
-  let invested = 0;
+export async function handleApiAccount(request, env) {
+  const startingCapital = 10000000;
+  const headers = {
+    'Cache-Control': 'no-store',
+    'Access-Control-Allow-Origin': '*',
+  };
   try {
-    const { results } = await env.DB.prepare(
-      'SELECT buy_price, quantity FROM positions'
-    ).all();
-    for (const row of results) {
-      invested += row.buy_price * row.quantity;
-    }
-  } catch (e) {
-    // 샘플 데이터
-    invested = 2290000;
+    const { invested } = await env.DB.prepare(
+      'SELECT COALESCE(SUM(buy_price * quantity), 0) AS invested FROM positions'
+    ).first();
+    return Response.json({
+      total_balance: startingCapital,
+      invested,
+      available: startingCapital - invested,
+      total_profit_rate: null,
+    }, { headers });
+  } catch (error) {
+    console.error('Failed to read account:', error);
+    return Response.json({ error: 'Account data unavailable' }, { status: 500, headers });
   }
-
-  return new Response(JSON.stringify({
-    total_balance: 10000000,
-    invested: invested,
-    available: 10000000 - invested,
-    total_profit_rate: invested > 0 ? ((10000000 - invested) / invested * 100) : 0,
-  }), {
-    headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'Access-Control-Allow-Origin': '*' },
-  });
 }
